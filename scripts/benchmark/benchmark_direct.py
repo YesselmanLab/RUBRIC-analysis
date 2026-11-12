@@ -47,8 +47,6 @@ def public_command(command, work, config):
     names = {config.get(k): k for k in ("rubric", "rnaview", "bpnet") if config.get(k)}
     names.update({config.get("dssr"): "x3dna-dssr", config["python"]: "python",
                   str(python_bin / "barnaba"): "barnaba", str(python_bin / "annotator"): "annotator"})
-    if config.get("clarna"):
-        names.update({config["clarna_python"]: "python2.7", config["clarna"]: "clarna.py"})
     shown = []
     for part in map(str, command):
         if part in names:
@@ -76,26 +74,7 @@ def command_for(tool, cif, work, config):
         return [str(python_bin / "annotator"), str(cif), "--json", "annotation.json"]
     if tool == "bpnet":
         return [config["bpnet"], cif.name]
-    if tool == "clarna":
-        return [config["clarna_python"], config["clarna"], "-i", cif.name,
-                "--normalize-graph", "--save-graph", "graph.json"]
     raise ValueError(tool)
-
-
-CLARNA_LW = re.compile(r"^([WHS])([WHS])_(cis|tran)$")
-
-
-def clarna_pairs(graph):
-    names = [node["id"] for node in graph["nodes"]]
-    pairs = []
-    for link in graph["links"]:
-        if link.get("type") != "contact" or link.get("is_alt"):
-            continue
-        match = CLARNA_LW.match(link.get("desc", ""))
-        if match:
-            lw = ("c" if match[3] == "cis" else "t") + match[1] + match[2]
-            pairs.append([names[link["source"]], names[link["target"]], lw])
-    return pairs
 
 
 def validate_output(tool, cif, work, stdout, stderr):
@@ -141,17 +120,13 @@ def validate_output(tool, cif, work, stdout, stderr):
         if path is None:
             raise ValueError("Missing FR3D annotation file")
         return [line.split("\t") for line in path.read_text().splitlines() if line.strip()]
-    if tool == "clarna":
-        if "find contacts .. DONE" not in stdout:
-            raise ValueError("ClaRNA did not finish contact classification")
-        return clarna_pairs(json.loads((work / "graph.json").read_text()))
     raise ValueError(tool)
 
 
 def run_trial(tool, row, repeat, args, config, output, reference_dir, source_hash):
     with tempfile.TemporaryDirectory(prefix="rnad-", dir="/tmp") as temp:
         work = Path(temp)
-        source = row["clarna_path"] if tool == "clarna" else row["source_path"]
+        source = row["source_path"]
         cif = work / Path(source).name
         cif.symlink_to(source)
         command = command_for(tool, cif, work, config)
@@ -194,9 +169,6 @@ def run_trial(tool, row, repeat, args, config, output, reference_dir, source_has
                 pairs = validate_output(tool, cif, work, stdout, stderr)
                 records = sorted(json.dumps(p, sort_keys=True, separators=(",", ":")) for p in pairs)
                 result.update(pair_count=len(pairs), output_sha256=hashlib.sha256("\n".join(records).encode()).hexdigest())
-                if tool == "clarna" and repeat == 0:
-                    (output / "clarna_pairs").mkdir(exist_ok=True)
-                    (output / "clarna_pairs" / f"{row['pdb']}.json").write_text(json.dumps(pairs))
             except Exception as error:
                 result.update(status="invalid_output", error=f"{type(error).__name__}: {error}")
         log = output / "logs" / f"{row['pdb']}_{tool}_{repeat}.log"
@@ -211,8 +183,6 @@ def main():
     ap.add_argument("--input", type=Path, default=ROOT / "data/structures",
                     help="folder of <ID>.cif files (scripts/fetch_structures.py)")
     ap.add_argument("--cohort", type=Path, default=ROOT / "data/benchmark/dssr_RUBRIC_time_benchmark.csv")
-    ap.add_argument("--clarna-input", type=Path, default=ROOT / ".runtime-tools/clarna-inputs",
-                    help="prepared <ID>.pdb files for ClaRNA (scripts/benchmark/clarna_input.py)")
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--tools", default=",".join(common.TOOLS))
     ap.add_argument("--runs", type=int, default=3)
@@ -255,16 +225,8 @@ def main():
     for row in rows:
         source = (args.input / f"{row['pdb']}.cif").resolve()
         row.update(source_path=str(source), size=source.stat().st_size)
-    if "clarna" in tools:
-        missing = [r["pdb"] for r in rows if not (args.clarna_input / f"{r['pdb']}.pdb").is_file()]
-        if missing:
-            ap.error(f"{len(missing)} ClaRNA inputs missing from {args.clarna_input}, e.g. {missing[:5]}; "
-                     "run scripts/benchmark/clarna_input.py")
-        for row in rows:
-            row["clarna_path"] = str((args.clarna_input / f"{row['pdb']}.pdb").resolve())
     manifest = [{"pdb": r["pdb"], "nucleotides": r["nucleotides"],
-                 "input": public_path(r["source_path"]), "size": r["size"],
-                 **({"clarna_input_sha256": common.sha(r["clarna_path"])} if "clarna_path" in r else {})}
+                 "input": public_path(r["source_path"]), "size": r["size"]}
                 for r in rows]
     executables = {"python": config["python"]}
     for tool in tools:
@@ -273,8 +235,6 @@ def main():
             executables[key] = config[key]
         elif tool in ("barnaba", "rnapolis"):
             executables[tool] = str(Path(config["python"]).parent / ("annotator" if tool == "rnapolis" else tool))
-        elif tool == "clarna":
-            executables.update(clarna=config["clarna"], clarna_python=config["clarna_python"])
     metadata = {"protocol": "direct_cli_original_mmcif_v2", "tools": tools,
                 "runs": args.runs, "warmups": args.warmups, "workers": args.workers,
                 "warm_input": "each input is read in full (checksum), untimed, before its first trial",
@@ -284,13 +244,7 @@ def main():
                 "platform": common.platform.platform(),
                 "thread_environment": common.THREAD_ENV, "cohort_sha256": common.sha(args.cohort),
                 "script_hashes": {name: common.sha(HERE / name) for name in
-                                  ("benchmark_direct.py", "benchmark_all.py", "_annotators.py")
-                                  + (("clarna_input.py",) if "clarna" in tools else ())},
-                **({"clarna_input": "PDB format from clarna_input.py (model 1, nucleotides, aliased chains); "
-                                    "conversion untimed here, see its conversion.csv",
-                    "clarna_packages": subprocess.check_output(
-                        [config["clarna_python"], "-m", "pip", "freeze"], text=True,
-                        stderr=subprocess.DEVNULL).splitlines()} if "clarna" in tools else {}),
+                                  ("benchmark_direct.py", "benchmark_all.py", "_annotators.py")},
                 "executable_hashes": {key: common.sha(value) for key, value in executables.items()},
                 "packages": [public_requirement(line) for line in subprocess.check_output(
                     [config["python"], "-m", "pip", "freeze"], text=True,

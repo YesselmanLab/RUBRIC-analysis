@@ -17,7 +17,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
-TOOLS = ("rubric", "rubric_noscore", "dssr", "fr3d", "rnaview", "barnaba", "rnapolis", "bpnet", "clarna")
+TOOLS = ("rubric", "rubric_noscore", "dssr", "fr3d", "rnaview", "barnaba", "rnapolis", "bpnet")
 THREAD_ENV = {key: "1" for key in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
               "VECLIB_MAXIMUM_THREADS", "NUMEXPR_NUM_THREADS", "BLIS_NUM_THREADS")}
 

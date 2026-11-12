@@ -11,8 +11,7 @@ import benchmark_direct as direct
 class DirectTests(unittest.TestCase):
     def test_native_commands_have_no_preprocessing_or_wrapper(self):
         config = dict(python="/venv/bin/python", rubric="/bin/rubric", dssr="/bin/dssr",
-                      rnaview="/bin/rnaview", bpnet="/bin/bpnet",
-                      clarna_python="/clarna-env/bin/python", clarna="/src/ClaRNA/clarna.py")
+                      rnaview="/bin/rnaview", bpnet="/bin/bpnet")
         work = Path("/tmp/run")
         cif = work / "TEST.cif"
         self.assertEqual(direct.command_for("dssr", cif, work, config),
@@ -61,8 +60,7 @@ class DirectTests(unittest.TestCase):
     def test_recorded_command_and_config_have_no_machine_paths(self):
         config = dict(python="/home/me/venv/bin/python", rubric="/home/me/build/rubric",
                       dssr="/opt/x/x3dna-dssr", rnaview="/home/me/rv/bin/rnaview",
-                      bpnet="/home/me/bp/bpnet", packages={"numpy": "2.2.6"},
-                      clarna_python="/home/me/clarna-env/bin/python", clarna="/home/me/ClaRNA/clarna.py")
+                      bpnet="/home/me/bp/bpnet", packages={"numpy": "2.2.6"})
         work = Path("/tmp/rnad-abc")
         cif = work / "1ABC.cif"
         for tool in direct.common.TOOLS:
