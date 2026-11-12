@@ -1,7 +1,6 @@
 """Derive per-parameter penalty weights using Shannon (log-odds) approach."""
 
 import argparse
-import datetime
 import json
 import math
 from pathlib import Path
@@ -15,6 +14,15 @@ DEFAULT_DISTS = REPO_ROOT / "data" / "reference" / "scoring_tables" / "parameter
 DEFAULT_PROSCO_DISTS = REPO_ROOT / "data" / "reference" / "scoring_tables" / "prosco_distributions.json"
 DEFAULT_Z_TABLES = REPO_ROOT / "data" / "reference" / "scoring_tables" / "z_tables.json"
 DEFAULT_OUTPUT = REPO_ROOT / "data" / "reference" / "scoring_tables" / "penalty_weights.json"
+
+
+def repo_relative(path) -> str:
+    """Path relative to the repository root, so the output names no local folders."""
+    path = Path(path).resolve()
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return path.name
 
 from _vendor.canonical import canonicalize_bp, maybe_flip  # noqa: E402
 from _vendor.hbond_distance_policy import distances_to_score  # noqa: E402
@@ -308,7 +316,6 @@ def main():
 
     output = {
         "schema_version": "4.0-per-parameter-shannon",
-        "generated_at": datetime.datetime.utcnow().strftime("%Y-%m-%d"),
         "weight_scheme": "shannon-log-odds-per-parameter",
         "method": {
             "_documentation": [
@@ -335,13 +342,13 @@ def main():
         },
         "good_reference_set": {
             "n_pairs": n_good,
-            "feature_dir": str(args.features_dir),
-            "distributions": str(args.distributions),
+            "feature_dir": repo_relative(args.features_dir),
+            "distributions": repo_relative(args.distributions),
             "mean_severity": {r["param"]: round(r["mean_good"], 6) for r in results},
         },
         "poor_reference_set": {
             "n_pairs": n_poor,
-            "feature_dir": str(args.poor_features_dir),
+            "feature_dir": repo_relative(args.poor_features_dir),
             "mean_severity": {r["param"]: round(r["mean_poor"], 6) for r in results},
         },
         "raw_logodds_nats": {r["param"]: round(r["raw_logodds"], 4) for r in results},

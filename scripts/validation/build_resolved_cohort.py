@@ -88,23 +88,22 @@ def select(cands: pd.DataFrame, byc: dict) -> list:
 
 def summarise(picked: list, byp: dict, n_nt: dict) -> pd.DataFrame:
     rows = []
-    rv = pd.DataFrame()
     for r, M in picked:
         pa, pb = byp.get((r.worst, r.cw)), byp.get((r.best, r.cb))
         dsc = sw = sb = np.nan
+        rv = pd.DataFrame()
         if pa is not None and pb is not None:
             pa, pb = pa[pa.c2 == r.cw], pb[pb.c2 == r.cb]
             if len(pa) and len(pb):
                 mp = pa.merge(pb, on=["n1", "n2", "lw_class"], suffixes=("_w", "_b"))
-                # "Review" is the pre-2026-10-30 engine label for "Priority review".
-                rv = mp[mp.tier_w.isin(["Review", "Priority review"])].dropna(subset=["score_w", "score_b"])
+                rv = mp[mp.tier_w == "Priority review"].dropna(subset=["score_w", "score_b"])
                 if len(rv) >= 1:
                     dsc = (rv.score_b - rv.score_w).mean()
                     sw, sb = rv.score_w.mean(), rv.score_b.mean()
         rows.append({
             "rep": r.rep, "worst": r.worst, "best": r.best, "gap": r.gap,
             "cw": r.cw, "cb": r.cb,
-            "n_review": 0 if pa is None else len(rv),
+            "n_review": len(rv),
             "method": r.method, "n_res": len(M), "nt": n_nt.get(r.best),
             "d_suit": M.suiteness_b.mean() - M.suiteness_w.mean(),
             "d_bang": 100 * (M.is_outlier_b.mean() - M.is_outlier_w.mean()),

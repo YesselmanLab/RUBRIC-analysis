@@ -60,9 +60,8 @@ def main():
         annotators.vote_sides = published_sides
 
     out["provenance_note"] = (
-        "same comparison inventory and referee files as annotator_consensus.json (the "
-        "inventory was re-run with the current C++ engine on 2026-10-01 and is "
-        "identical row for row); class conflicts restricted to pairs RUBRIC reports "
+        "same comparison inventory and referee files as annotator_consensus.json; "
+        "class conflicts restricted to pairs RUBRIC reports "
         f"(present in comparison/rubric_pairs.json): {dropped['n']:,} unreported-candidate "
         "records removed; ambiguous RUBRIC calls credited when a referee reports any "
         "of RUBRIC's candidates (a candidate shared with DSSR credits both); other "

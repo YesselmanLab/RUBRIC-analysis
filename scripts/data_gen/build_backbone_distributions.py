@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import datetime
 import json
 import sys
 from pathlib import Path
@@ -135,7 +134,6 @@ def main() -> None:
 
     prosco_out = {
         "schema_version": "1.0",
-        "generated_at": datetime.date.today().isoformat(),
         "method": {
             "cell": "Richardson conformer (no _ANY fallback: pooling conformers is multimodal)",
             "circular": "values unwrapped as center + signed_gap(value, center) before KDE; "
@@ -146,7 +144,6 @@ def main() -> None:
     }
     z_out = {
         "schema_version": "1.0",
-        "generated_at": datetime.date.today().isoformat(),
         "method": {"M": "weighted median (unwrapped)", "sl": "(M-D1)/1.2816",
                    "su": "(D9-M)/1.2816", "circular": "unwrap via unwrap_center"},
         "z_tables": {"backbone": ztab},

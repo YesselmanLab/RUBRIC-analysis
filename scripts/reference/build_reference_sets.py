@@ -2,7 +2,6 @@
 
 import argparse
 import csv
-import datetime
 import json
 from pathlib import Path
 
@@ -86,7 +85,6 @@ def main():
             continue
         (good if curated(m) else poor)[p] = entry(m, nt)
 
-    today = datetime.date.today().isoformat()
     criteria = {"all_entries": f"bonds_rmsz <= {RMSZ}, angles_rmsz <= {RMSZ}, clashscore <= {CLASH}",
                 "X-ray": f"resolution <= {XRAY_RES} A, R_free <= {XRAY_RFREE}, R_free - R_work <= {XRAY_GAP}",
                 "EM": f"resolution <= {EM_RES} A, em_q_score >= {EM_Q}",
@@ -100,10 +98,10 @@ def main():
                 "by_method": by}
 
     (SETS / "reference_set.json").write_text(json.dumps(
-        {"schema_version": "3.0", "generated_at": today, "criteria": criteria,
+        {"schema_version": "3.0", "criteria": criteria,
          "summary": summary(good), "pdbs": good}, indent=1))
     (SETS / "reference_set_poor.json").write_text(json.dumps(
-        {"schema_version": "3.0", "generated_at": today,
+        {"schema_version": "3.0",
          "definition": "representative entry with >= 1 nucleotide that is not in the curated set",
          "summary": summary(poor), "skipped": skipped, "pdbs": poor}, indent=1))
     print(f"representative entries {len(unique)} | curated {len(good)} {summary(good)['by_method']} "

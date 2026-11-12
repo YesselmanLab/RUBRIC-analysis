@@ -136,7 +136,10 @@ those marked *structures* read `data/structures/` (see [Structures](#structures-
 | `scripts/data_gen/extract_figure3_examples.py` | `data/reference/figure3/example_pairs.json` (Fig. 3) | engine, structures |
 | `scripts/validation/build_review_points.py` | `data/reference/resolved_again/redo_per_structure_points.csv`, `issue_rates_per_unit.csv` (Fig. 4, Fig. S1) | engine, structures |
 | `scripts/reference/count_nucleotides.py` | nucleotide counts in `data/reference/metadata/metadata_cache.json` | structures |
+| `scripts/validation/build_engine_archive.py` | `data/reference/engine_archive/` (per-pair and per-suite engine output) | engine, structures |
 | `scripts/validation/build_resolved_cohort.py` | `data/reference/resolved_again/resolve_strict.csv` | |
+| `scripts/validation/build_resolved_points.py` | `data/reference/resolved_again/resolve_per_molecule_points.csv` (Fig. 4A-D) | |
+| `scripts/validation/build_quality_axes.py` | `data/reference/quality_axes/bang_vs_quality.csv` (Fig. S2B, C) | |
 | `scripts/validation/time_reversal_resolved.py` | `resolve_pairs_matched.csv`, `data/validation/time_reversal_resolved.json` | engine |
 | `scripts/validation/time_reversal_controls.py` | `data/validation/time_reversal_controls.json` | |
 | `scripts/validation/extract_rubric_candidates.py` | `data/comparison/rubric_candidates.json` | engine, structures |

@@ -1,7 +1,6 @@
 """Build per-(bp_type, edge_type, parameter) reference distributions."""
 
 import argparse
-import datetime
 import json
 import sys
 from pathlib import Path
@@ -223,7 +222,6 @@ def main() -> None:
     }
 
     output = {
-        "generated_at": datetime.date.today().isoformat(),
         "method": {
             "z_prime": (
                 "Z'(x) = (x − M̂) / scale_upper if x ≥ M̂, else / scale_lower. "

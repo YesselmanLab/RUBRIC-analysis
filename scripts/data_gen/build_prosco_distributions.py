@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import datetime
 import json
 import sys
 from pathlib import Path
@@ -202,7 +201,6 @@ def main() -> None:
 
     output = {
         "schema_version": "1.0",
-        "generated_at": datetime.date.today().isoformat(),
         "method": {
             "prosco": (
                 "ProSco(x) = 100 × (1 − cum_mass_in_higher_density_bins(x)). "

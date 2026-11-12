@@ -103,7 +103,7 @@ def main():
                           for t, d in shared.items() for k, v in d.items()},
         "per_structure_fields": ["covered", "votes_rubric", "votes_dssr"],
         "per_structure": by_structure,
-        "provenance": "same July differences inventory and referee files as "
+        "provenance": "same differences inventory and referee files as "
                       "annotator_consensus.json; vote logic from "
                       "adjudicate_consensus.py (see module docstring)",
     }

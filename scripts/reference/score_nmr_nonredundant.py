@@ -20,7 +20,6 @@ import subprocess
 import tempfile
 import urllib.request
 from concurrent.futures import ProcessPoolExecutor
-from datetime import datetime
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -137,8 +136,7 @@ def main() -> None:
         status[st] = status.get(st, 0) + 1
         if st == "ok":
             scores[pdb] = {**info, "bgsu_class": classes[pdb]}
-    doc = {"generated_at": datetime.now().isoformat(timespec="seconds"),
-           "scorer": "cpp:rubric", "bgsu_release": args.release,
+    doc = {"scorer": "cpp:rubric", "bgsu_release": args.release,
            "selection": "solution NMR, RNA polymer, no protein/DNA; one entry per BGSU class; model 1",
            "summary": {"n_attempted": len(ids), **{f"n_{k}": v for k, v in status.items()}},
            "scores": scores}

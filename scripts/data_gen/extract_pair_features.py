@@ -121,7 +121,6 @@ def main() -> None:
         "n_pdbs_attempted": len(pdbs), "n_pdbs_failed": len(failed),
         "n_pairs": len(all_pairs), "n_hbonds": len(all_hbonds),
         "n_torsion_observations": len(all_torsions),
-        "elapsed_seconds": round(time.time() - t0, 1),
         "failed_pdbs": [{"pdb_id": p, "error": e} for p, e in failed],
     }
     with open(args.output_dir / "extraction_summary.json", "w") as f:

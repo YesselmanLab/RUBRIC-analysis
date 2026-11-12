@@ -10,29 +10,13 @@ __pycache__/
 # re-include anything. Excluding `data/*` leaves the negations below workable.
 data/*
 
-# Notebook plots that are not manuscript figures: the executed notebooks embed
-# their own output, so there is nothing to keep here.
-figures/exploratory/
-figures/pse/
-
 # PyMOL writes fetched structures into the working directory.
 *.cif
 *.zip
-# Working copy of the S5 analysis; the figure notebook is
-# notebooks/supplemental_figures/figS3.ipynb.
-notebooks/backbone_and_pucker.ipynb
-notebooks/suite_outliers.ipynb
 
-# PyMOL render scripts: rebuild data/pymol/renders/ from data/pymol/sessions/. Kept
-# out of git; the notebooks read only the rendered images in data/. The exception is
-# render_pair_examples.py, which renders the Fig. S8 and S9 pairs from data/structures.
+# Local PyMOL helpers; render_pair_examples.py is the one that belongs to the repository.
 scripts/pymol_figures/*
 !scripts/pymol_figures/render_pair_examples.py
-notebooks/consolidated_backbone_puckers.ipynb
-notebooks/predictive_value_and_robustness.ipynb
 
 # Notebook result caches (rebuilt automatically when data/ changes).
 .cache/
-
-# Backup of the removed Fig. S3C panel (per-class agreement with RUBRIC); local only.
-notebooks/figS3C_class_agreement_backup/

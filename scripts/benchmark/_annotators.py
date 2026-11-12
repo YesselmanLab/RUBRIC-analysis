@@ -1,4 +1,4 @@
-"""Offline runtime adapters, adapted from the project's archived annotator runner."""
+"""Offline runtime adapters for the annotators in the runtime benchmark."""
 import argparse
 import json
 import math

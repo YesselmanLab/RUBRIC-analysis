@@ -1,7 +1,6 @@
 """Score original (RCSB) vs PDB-REDO re-refined coordinates with the C++ engine."""
 
 import argparse
-import datetime
 import json
 import subprocess
 import sys
@@ -167,13 +166,11 @@ def main() -> None:
                 rate = i / el if el else 0
                 print(f"  [{i}/{len(pdbs)}] paired={len(results)} pairs={len(all_pairs):,} "
                       f"failed={len(failures)} | {rate:.1f}/s", flush=True)
-    elapsed = round(time.time() - t0, 1)
 
     ps = {"original": _stat([r["original"]["pairs_score"] for r in results if r["original"]["pairs_score"] is not None]),
           "redo": _stat([r["redo"]["pairs_score"] for r in results if r["redo"]["pairs_score"] is not None])} if results else {}
     all_payload = {
         "schema_version": "3.0",
-        "generated_at": datetime.datetime.now().isoformat(timespec="seconds"),
         "method": {
             "_documentation": [
                 "Structure-level scores on original (RCSB) vs PDB-REDO coordinates,",
@@ -197,7 +194,6 @@ def main() -> None:
         pair_summary = {
             "n_structures": len(results), "n_pairs_matched": len(all_pairs),
             "n_unmatched": n_unmatched, "n_failed": len(failures),
-            "elapsed_seconds": elapsed,
             "orig_score": _stat(o), "redo_score": _stat(r), "delta": _stat(deltas),
             "redo_wins": wins, "redo_wins_pct": round(100 * wins / len(all_pairs), 2),
         }
@@ -205,7 +201,6 @@ def main() -> None:
         pair_summary = {"n_structures": 0, "n_pairs_matched": 0}
     pairs_payload = {
         "schema_version": "2.0",
-        "generated_at": datetime.datetime.now().isoformat(timespec="seconds"),
         "method": {
             "_documentation": [
                 "Per matched base pair: score on original vs PDB-REDO coordinates,",

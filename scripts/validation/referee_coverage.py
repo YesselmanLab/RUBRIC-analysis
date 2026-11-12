@@ -1,4 +1,4 @@
-"""Referee coverage of RUBRIC's rejections and its unique calls, current engine."""
+"""Referee coverage of RUBRIC's rejections and its unique calls."""
 import csv
 import json
 import sys
@@ -38,7 +38,7 @@ def main():
     shared = set.intersection(*(set(d) for d in tools.values()))
     print(f"\n{len(shared):,} structures processed by all {len(tools)} tools")
 
-    out = {"source": "data/comparison/*.json + fr3d/ (current engine run)",
+    out = {"source": "data/comparison/*.json + fr3d/",
            "referees": REFEREES, "n_structures": len(shared),
            "matching": "direction-agnostic on (chain, resnum); class label ignored",
            "populations": {}}

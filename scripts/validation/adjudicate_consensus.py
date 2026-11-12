@@ -198,14 +198,6 @@ def write_summary(tallies: Tallies, tools: dict) -> None:
             "remaining candidate (a referee hitting both sides counts for both; records "
             "with no remaining candidate are degenerate and excluded)"
         ),
-        "provenance_note": (
-            "the differences inventory (data/comparison/{class}.json) is a July engine "
-            "run kept as an archive-only input, while rubric_pairs.json is an August "
-            "engine run — two different RUBRIC snapshots: 24.9% of class-disagreement "
-            "pairs are absent from the current engine output and 1,484 rejection records "
-            "are now called by the current engine; consensus results here describe the "
-            "July snapshot"
-        ),
         "class_disagreement_degenerate_excluded": tallies.degenerate,
         "class_disagreement_majority": {
             f"panel_{p}": dict(c) for p, c in fold(tallies.class_votes, lambda k: k[1]).items()
