@@ -144,6 +144,7 @@ those marked *structures* read `data/structures/` (see [Structures](#structures-
 | `scripts/validation/adjudicate_consensus.py` | `data/validation/annotator_consensus.json` | |
 | `scripts/validation/consensus_reported_conflicts.py` | `data/validation/annotator_consensus_reported.json` | |
 | `scripts/validation/consensus_shared_conflicts.py` | `data/validation/annotator_consensus_shared.json` | |
+| `scripts/validation/template_fit_class_conflicts.py` | `data/validation/template_fit_class_conflicts.csv` (Fig. S3D) | structures |
 | `scripts/validation/annotator_agreement.py` | `data/validation/annotator_agreement.json` | |
 | `scripts/validation/referee_coverage.py` | `data/validation/referee_coverage_current.json` | |
 | `scripts/validation/rejection_referee_support.py` | `data/validation/rejection_referee_support.json` | |
@@ -207,7 +208,9 @@ the copy used in the paper; the runtime benchmark records each file's checksum.
 | subdir | contents |
 |---|---|
 | `sessions/` | every PyMOL session (`.pse`) behind the structure panels, each saved in its final camera view; `README.txt` maps sessions to panels |
-| `renders/` | the ray-traced images the figure notebooks read (Figures 3 and 4, Supplementary Figure S10), plus `7D_labels.json`, the label anchors for Figure S10D |
+| `renders/` | the ray-traced images the figure notebooks read (Figures 3 and 4, Supplementary Figures S8, S9 and S12), plus their label anchors (`<key>_meta.json` for Figures S8 and S9, `7D_labels.json` for Figure S12D) |
 
-The notebooks read only `renders/`, never the sessions. The images are rendered
-from the sessions by a local script that is not part of the repository.
+The notebooks read only `renders/`, never the sessions or the structure files. The
+Figure S8 and S9 pairs are rendered from `data/structures` by
+`scripts/pymol_figures/render_pair_examples.py`; the other images are rendered from
+the sessions by a local script that is not part of the repository.

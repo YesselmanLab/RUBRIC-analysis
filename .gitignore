@@ -23,9 +23,11 @@ figures/pse/
 notebooks/backbone_and_pucker.ipynb
 notebooks/suite_outliers.ipynb
 
-# PyMOL render script: rebuilds data/pymol/renders/ from data/pymol/sessions/. Kept
-# out of git; the notebooks read only the rendered images in data/.
-scripts/pymol_figures/
+# PyMOL render scripts: rebuild data/pymol/renders/ from data/pymol/sessions/. Kept
+# out of git; the notebooks read only the rendered images in data/. The exception is
+# render_pair_examples.py, which renders the Fig. S8 and S9 pairs from data/structures.
+scripts/pymol_figures/*
+!scripts/pymol_figures/render_pair_examples.py
 notebooks/consolidated_backbone_puckers.ipynb
 notebooks/predictive_value_and_robustness.ipynb
 
