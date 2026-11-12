@@ -6,7 +6,7 @@ from pathlib import Path
 import gemmi
 
 ROOT = Path(__file__).resolve().parents[2]
-PAIRS = ROOT / "data" / "comparison" / "parse_pairs.json"
+PAIRS = ROOT / "data" / "comparison" / "rubric_pairs.json"
 OUT = ROOT / "data" / "comparison" / "residue_names.json"
 DEFAULT_STRUCTURES = ROOT / "data" / "structures"
 

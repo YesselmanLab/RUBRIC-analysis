@@ -1,4 +1,4 @@
-"""Referee consensus on FastRNA-DSSR class conflicts, restricted to pairs FastRNA actually reports."""
+"""Referee consensus on RUBRIC-DSSR class conflicts, restricted to pairs RUBRIC actually reports."""
 import json
 import sys
 from pathlib import Path
@@ -31,7 +31,7 @@ def main():
         sys.exit("full run does not reproduce annotator_consensus.json; not writing")
     print("full run reproduces annotator_consensus.json")
 
-    reported = annotators.parse_pairs()
+    reported = annotators.rubric_pairs()
     original = annotators.disagreement_records
     dropped = {"n": 0}
 
@@ -62,10 +62,10 @@ def main():
     out["provenance_note"] = (
         "same comparison inventory and referee files as annotator_consensus.json (the "
         "inventory was re-run with the current C++ engine on 2026-10-01 and is "
-        "identical row for row); class conflicts restricted to pairs FastRNA reports "
-        f"(present in comparison/parse_pairs.json): {dropped['n']:,} unreported-candidate "
-        "records removed; ambiguous FastRNA calls credited when a referee reports any "
-        "of FastRNA's candidates (a candidate shared with DSSR credits both); other "
+        "identical row for row); class conflicts restricted to pairs RUBRIC reports "
+        f"(present in comparison/rubric_pairs.json): {dropped['n']:,} unreported-candidate "
+        "records removed; ambiguous RUBRIC calls credited when a referee reports any "
+        "of RUBRIC's candidates (a candidate shared with DSSR credits both); other "
         "buckets unchanged")
     out["class_disagreement_unreported_removed"] = dropped["n"]
     OUT.write_text(json.dumps(out, indent=1))

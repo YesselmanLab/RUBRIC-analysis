@@ -18,7 +18,7 @@ if [[ "${1:-}" == "--clarna" ]]; then
   "$benchmark_python" "$benchmark_dir/clarna_input.py"
   exec "$benchmark_python" "$benchmark_dir/benchmark_direct.py" \
     --output "$analysis_root/data/benchmark/runtime_direct_clarna" \
-    --tools parse,clarna --workers 4 --skip-after-timeout --resume "$@"
+    --tools rubric,clarna --workers 4 --skip-after-timeout --resume "$@"
 fi
 exec "$benchmark_python" "$benchmark_dir/benchmark_direct.py" \
   --output "$analysis_root/data/benchmark/runtime_direct_all" --workers 4 --resume "$@"

@@ -1,4 +1,4 @@
-"""How many of the five referees report the pairs FastRNA rejects, split by reason."""
+"""How many of the five referees report the pairs RUBRIC rejects, split by reason."""
 import json
 import sys
 from collections import Counter, defaultdict
@@ -17,7 +17,7 @@ def main():
               **ac.load_available(list(ac.VOTING_TOOLS))}
     by_reason = defaultdict(Counter)
     for r in annotators.disagreement_records():
-        if r.bucket != "rejected_by_parse":
+        if r.bucket != "rejected_by_rubric":
             continue
         found = {t: ac.real_classes(p[r.pdb_id], r) for t, p in panels.items()
                  if r.pdb_id in p}
@@ -28,7 +28,7 @@ def main():
 
     pooled = sum(by_reason.values(), Counter())
     published = json.loads((ROOT / "data/validation/annotator_consensus.json").read_text())
-    pub = published["parse_rejections_n_annotators_reporting"]
+    pub = published["rubric_rejections_n_annotators_reporting"]
     mine = {f"panel_{p}": {} for p, _ in pooled}
     for (p, n), v in pooled.items():
         mine[f"panel_{p}"][str(n)] = v
@@ -37,7 +37,7 @@ def main():
         sys.exit("pooled tally does not reproduce annotator_consensus.json; not writing")
     print("pooled tally reproduces annotator_consensus.json")
 
-    out = {"note": "referees (of the five) reporting each FastRNA-rejected pair, by "
+    out = {"note": "referees (of the five) reporting each RUBRIC-rejected pair, by "
                    "rejection reason; panel_5 = records all five referees cover",
            "by_reason": {}}
     for reason, c in sorted(by_reason.items()):

@@ -11,8 +11,8 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]
 ARCHIVE = ROOT / "data" / "reference" / "engine_archive"
-CACHE = Path(os.environ.get("PARSE_CACHE_DIR") or Path.home() / ".cache" / "parse")
-DEFAULT_ENGINE = os.environ.get("PARSE_ENGINE") or shutil.which("parse") or "parse"
+CACHE = Path(os.environ.get("RUBRIC_CACHE_DIR") or Path.home() / ".cache" / "rubric")
+DEFAULT_ENGINE = os.environ.get("RUBRIC_ENGINE") or shutil.which("rubric") or "rubric"
 COLUMNS = ["pdb_id", "res_id1", "res_id2", "lw_class", "score", "tier"]
 
 

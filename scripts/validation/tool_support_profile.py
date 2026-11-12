@@ -10,10 +10,10 @@ data_file = lambda rel: ROOT / "data" / rel
 _json = lambda rel: json.loads(data_file(rel).read_text())
 OUT = data_file("validation/tool_support_profile.json")
 
-MATRIX_TOOLS = ["parse", "dssr", "fr3d", "rnaview", "barnaba", "rnapolis", "bpnet"]
-MATRIX_LABELS = ["FastRNA", "DSSR", "FR3D", "RNAView", "barnaba", "RNApolis", "BPNET"]
+MATRIX_TOOLS = ["rubric", "dssr", "fr3d", "rnaview", "barnaba", "rnapolis", "bpnet"]
+MATRIX_LABELS = ["RUBRIC", "DSSR", "FR3D", "RNAView", "barnaba", "RNApolis", "BPNet"]
 JSON_PAIR_FILES = {
-    "parse": "comparison/parse_pairs.json",
+    "rubric": "comparison/rubric_pairs.json",
     "dssr": "comparison/dssr_pairs.json",
     "rnaview": "comparison/rnaview_pairs.json",
     "barnaba": "comparison/barnaba_pairs.json",

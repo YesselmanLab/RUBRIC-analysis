@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 
 import _engine
-from _engine import run_parse
+from _engine import run_rubric
 
 REPO = Path(__file__).resolve().parent.parent.parent
 DEFAULT_REF = REPO / "data" / "reference" / "reference_sets" / "reference_set.json"
@@ -28,7 +28,7 @@ def _init_worker(engine: str) -> None:
 
 def _worker(pdb_id: str):
     try:
-        d = run_parse(pdb_id, _ENGINE)
+        d = run_rubric(pdb_id, _ENGINE)
         rows = [{"pdb_id": pdb_id, **{c: r[c] for c in COLS}} for r in d.get("backbone_torsions", [])]
         return pdb_id, rows, None
     except Exception as e:  # noqa: BLE001
@@ -40,7 +40,7 @@ def main() -> None:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--reference-set", type=Path, default=DEFAULT_REF)
     ap.add_argument("--output", type=Path, default=DEFAULT_OUT)
-    ap.add_argument("--engine", default=None, help="path to `parse` (else PARSE_ENGINE / PATH)")
+    ap.add_argument("--engine", default=None, help="path to `rubric` (else RUBRIC_ENGINE / PATH)")
     ap.add_argument("--workers", type=int, default=0, help="0 = cpu_count")
     ap.add_argument("--limit", type=int, default=0)
     args = ap.parse_args()
@@ -69,7 +69,7 @@ def main() -> None:
     df.to_csv(args.output, index=False)
     if df.empty:
         print(f"\nWrote {args.output} (EMPTY) - the engine returned no `backbone_torsions`. "
-              "Build `parse` from a PARSE-RNA version that emits per-residue backbone torsions.")
+              "Build `rubric` from a RUBRIC version that emits per-residue backbone torsions.")
         return
     print(f"\nWrote {args.output}")
     print(f"  {len(df):,} residues  |  {df.pdb_id.nunique()} structures  |  "

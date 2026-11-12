@@ -1,4 +1,4 @@
-"""Inter-annotator agreement across PARSE and the five-referee panel."""
+"""Inter-annotator agreement across RUBRIC and the five-referee panel."""
 
 import doctest
 import json
@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _vendor import annotators  # noqa: E402
 
 OUT = REPO / "data" / "validation" / "annotator_agreement.json"
-RATERS = ("parse", "fr3d", "rnaview", "barnaba", "rnapolis", "bpnet")
+RATERS = ("rubric", "fr3d", "rnaview", "barnaba", "rnapolis", "bpnet")
 REFEREES = RATERS[1:]
 DSSR_NOTE = (
     "DSSR is not a rater: full DSSR pair lists are not on disk; DSSR appears only inside "
@@ -37,7 +37,7 @@ COVERAGE_NOTE = (
 
 
 def load_raters() -> dict[str, dict[str, annotators.PairSets]]:
-    raters: dict[str, dict[str, annotators.PairSets]] = {"parse": annotators.parse_pairs()}
+    raters: dict[str, dict[str, annotators.PairSets]] = {"rubric": annotators.rubric_pairs()}
     raters["fr3d"] = annotators.fr3d_pairs()
     for tool in REFEREES[1:]:
         raters[tool] = annotators.tool_pairs(tool)
@@ -99,14 +99,14 @@ def cohen_kappa(pairs: list[tuple[str, str]]) -> float | None:
     return 1.0 if pe == 1.0 else (po - pe) / (1 - pe)
 
 
-def _labelled_units(ra: dict, rb: dict, a_is_parse: bool, lenient: bool) -> list:
+def _labelled_units(ra: dict, rb: dict, a_is_rubric: bool, lenient: bool) -> list:
     out = []
     for key in ra.keys() & rb.keys():
         fb = single_family(rb[key])
         if fb is None:
             continue
         fa = single_family(ra[key])
-        if fa is None and lenient and a_is_parse:
+        if fa is None and lenient and a_is_rubric:
             cands = ambiguous_candidates(ra[key])
             if cands:
                 fa = fb if fb in cands else min(cands)
@@ -118,7 +118,7 @@ def _labelled_units(ra: dict, rb: dict, a_is_parse: bool, lenient: bool) -> list
 def classification_pair(raters: dict, a: str, b: str, lenient: bool) -> dict:
     pairs: list[tuple[str, str]] = []
     for pdb in raters[a].keys() & raters[b].keys():
-        pairs.extend(_labelled_units(raters[a][pdb], raters[b][pdb], a == "parse", lenient))
+        pairs.extend(_labelled_units(raters[a][pdb], raters[b][pdb], a == "rubric", lenient))
     n = len(pairs)
     agree = sum(1 for x, y in pairs if x == y)
     kappa = cohen_kappa(pairs)
@@ -215,7 +215,7 @@ def alpha_report(raters: dict) -> dict:
 def consensus_support(raters: dict) -> dict:
     dists = {"unambiguous": Counter(), "ambiguous": Counter()}
     panel5 = {"unambiguous": Counter(), "ambiguous": Counter()}
-    for pdb, pairs in raters["parse"].items():
+    for pdb, pairs in raters["rubric"].items():
         panel = [r for r in REFEREES if pdb in raters[r]]
         for key, labels in pairs.items():
             k = sum(1 for r in panel if key in raters[r][pdb])
@@ -253,8 +253,8 @@ def print_summary(result: dict) -> None:
         cells = result["classification"][variant]
         print(f"\nclassification, {variant} (pct agree / kappa / n):")
         for b in REFEREES:
-            c = cells["parse"][b]
-            print(f"  parse-{b:<9} {c['percent_agreement']}% / {c['kappa']} / n={c['n_pairs']}")
+            c = cells["rubric"][b]
+            print(f"  rubric-{b:<9} {c['percent_agreement']}% / {c['kappa']} / n={c['n_pairs']}")
     alpha = result["krippendorff_alpha"]
     print(f"\nKrippendorff alpha (nominal, all 6): {alpha['alpha_all_6']} "
           f"over {alpha['n_units_ge2_raters']} units "
@@ -267,8 +267,8 @@ def print_summary(result: dict) -> None:
     for rater, cell in result["label_loss"].items():
         print(f"  {rater:<9} dropped {cell['n_dropped']:>7} of {cell['n_detected_pairs']:>8} "
               f"({cell['frac_dropped']})")
-    print("\nPARSE pair referee support (panel of 5 only):")
-    for group, counts in result["parse_consensus_support"]["k_panel5_only"].items():
+    print("\nRUBRIC pair referee support (panel of 5 only):")
+    for group, counts in result["rubric_consensus_support"]["k_panel5_only"].items():
         tot = sum(counts.values())
         line = ", ".join(f"{k}: {100 * n / tot:.1f}%" for k, n in counts.items())
         print(f"  {group} (n={tot}): {line}")
@@ -288,7 +288,7 @@ def main() -> None:
         "classification": classification_matrices(raters),
         "krippendorff_alpha": alpha_report(raters),
         "label_loss": label_loss(raters),
-        "parse_consensus_support": consensus_support(raters),
+        "rubric_consensus_support": consensus_support(raters),
         "sanity": sanity_checks(),
     }
     OUT.write_text(json.dumps(result, indent=1))

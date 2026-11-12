@@ -1,4 +1,4 @@
-"""Consensus adjudication of PARSE-vs-DSSR disagreements across five annotators."""
+"""Consensus adjudication of RUBRIC-vs-DSSR disagreements across five annotators."""
 
 import argparse
 import json
@@ -16,23 +16,23 @@ VOTING_TOOLS = ("rnaview", "barnaba", "rnapolis", "bpnet")
 
 LOO_DEFINITIONS = {
     "clean": (
-        "single-candidate records whose PARSE candidate shares nothing with "
+        "single-candidate records whose RUBRIC candidate shares nothing with "
         "{C, flip(C)} — the same population as class_disagreement_populations.clean"
     ),
     "disjoint_candidates": (
-        "EVERY PARSE candidate (however many) shares nothing with {C, flip(C)}; "
+        "EVERY RUBRIC candidate (however many) shares nothing with {C, flip(C)}; "
         "a wider population that also keeps multi-candidate records with no overlap"
     ),
 }
 
 
 def verdict_of(hits: dict) -> str:
-    n_parse = sum(1 for hit_parse, _ in hits.values() if hit_parse)
+    n_rubric = sum(1 for hit_rubric, _ in hits.values() if hit_rubric)
     n_dssr = sum(1 for _, hit_dssr in hits.values() if hit_dssr)
-    if not (n_parse or n_dssr):
+    if not (n_rubric or n_dssr):
         return "no_vote"
-    if n_parse != n_dssr:
-        return "parse" if n_parse > n_dssr else "dssr"
+    if n_rubric != n_dssr:
+        return "rubric" if n_rubric > n_dssr else "dssr"
     return "tie"
 
 
@@ -50,10 +50,10 @@ class Tallies:
         self.local_agree = Counter()
 
     def add(self, r: DisagreementRecord, found: dict) -> None:
-        if r.bucket == "rejected_by_parse":
+        if r.bucket == "rejected_by_rubric":
             n_rep = sum(1 for cs in found.values() if cs)
             self.reject_report[(len(found), n_rep)] += 1
-            self._add_reporting("rejected_by_parse", found)
+            self._add_reporting("rejected_by_rubric", found)
         elif r.bucket == "class_disagreement":
             self._add_class_votes(r, found)
         elif r.source == "python_only":
@@ -66,23 +66,23 @@ class Tallies:
                 self.per_tool[(bucket, tool, "reports")] += 1
 
     def _add_class_votes(self, r: DisagreementRecord, found: dict) -> None:
-        sides = annotators.vote_sides(r.disputed_class, r.parse_candidates)
+        sides = annotators.vote_sides(r.disputed_class, r.rubric_candidates)
         if sides is None:
             self.degenerate += 1
             return
-        dssr_side, parse_side = sides
-        clean = len(r.parse_candidates) == 1 and not set(r.parse_candidates) & dssr_side
+        dssr_side, rubric_side = sides
+        clean = len(r.rubric_candidates) == 1 and not set(r.rubric_candidates) & dssr_side
         population = "clean" if clean else "shared_candidate"
         hits = {}
         for tool, classes in found.items():
             self.per_tool[("class_disagreement", tool, "covered")] += 1
-            hit_parse, hit_dssr = bool(classes & parse_side), bool(classes & dssr_side)
-            hits[tool] = (hit_parse, hit_dssr)
-            if hit_parse:
-                self.per_tool[("class_disagreement", tool, "votes_parse")] += 1
+            hit_rubric, hit_dssr = bool(classes & rubric_side), bool(classes & dssr_side)
+            hits[tool] = (hit_rubric, hit_dssr)
+            if hit_rubric:
+                self.per_tool[("class_disagreement", tool, "votes_rubric")] += 1
             if hit_dssr:
                 self.per_tool[("class_disagreement", tool, "votes_dssr")] += 1
-            if hit_parse and hit_dssr:
+            if hit_rubric and hit_dssr:
                 self.per_tool[("class_disagreement", tool, "votes_both")] += 1
         verdict = verdict_of(hits)
         self.class_votes[(population, len(found), verdict)] += 1
@@ -91,7 +91,7 @@ class Tallies:
     def _add_leave_one_out(
         self, r: DisagreementRecord, dssr_side: set, clean: bool, hits: dict, verdict: str
     ) -> None:
-        disjoint = not set(r.parse_candidates) & dssr_side
+        disjoint = not set(r.rubric_candidates) & dssr_side
         for definition, member in (("clean", clean), ("disjoint_candidates", disjoint)):
             if not member:
                 continue
@@ -153,7 +153,7 @@ def run(tools: dict[str, dict], fr3d: dict[str, dict], fr3d_local: dict | None) 
 
 def verdict_block(c: Counter) -> dict:
     return {"n": sum(c.values()), "verdicts": dict(c),
-            "parse_dssr_ratio": round(c["parse"] / c["dssr"], 2) if c["dssr"] else None}
+            "rubric_dssr_ratio": round(c["rubric"] / c["dssr"], 2) if c["dssr"] else None}
 
 
 def population_blocks(class_votes: Counter) -> dict:
@@ -175,12 +175,12 @@ def leave_one_out_blocks(loo_votes: Counter) -> dict:
         if not blocks:
             continue
         baseline = blocks.pop("none", None)
-        ratios = [b["parse_dssr_ratio"] for b in blocks.values() if b["parse_dssr_ratio"]]
+        ratios = [b["rubric_dssr_ratio"] for b in blocks.values() if b["rubric_dssr_ratio"]]
         out[definition] = {
             "definition": note,
             "baseline": baseline,
             "dropped": dict(sorted(blocks.items())),
-            "parse_dssr_ratio_range": [min(ratios), max(ratios)] if ratios else None,
+            "rubric_dssr_ratio_range": [min(ratios), max(ratios)] if ratios else None,
         }
     return out
 
@@ -193,15 +193,15 @@ def write_summary(tallies: Tallies, tools: dict) -> None:
             "class votes are direction-agnostic: a referee class supports a side if it "
             "equals that side's label or its flip (comparison-file LW labels are not "
             "reliably in res_id1->res_id2 direction); a referee hit on the disputed class "
-            "C or flip(C) counts for DSSR; PARSE candidates direction-equivalent to C are "
-            "DROPPED from the PARSE side, so a PARSE vote requires a referee hit on a "
+            "C or flip(C) counts for DSSR; RUBRIC candidates direction-equivalent to C are "
+            "DROPPED from the RUBRIC side, so a RUBRIC vote requires a referee hit on a "
             "remaining candidate (a referee hitting both sides counts for both; records "
             "with no remaining candidate are degenerate and excluded)"
         ),
         "provenance_note": (
             "the differences inventory (data/comparison/{class}.json) is a July engine "
-            "run kept as an archive-only input, while parse_pairs.json is an August "
-            "engine run — two different PARSE snapshots: 24.9% of class-disagreement "
+            "run kept as an archive-only input, while rubric_pairs.json is an August "
+            "engine run — two different RUBRIC snapshots: 24.9% of class-disagreement "
             "pairs are absent from the current engine output and 1,484 rejection records "
             "are now called by the current engine; consensus results here describe the "
             "July snapshot"
@@ -212,13 +212,13 @@ def write_summary(tallies: Tallies, tools: dict) -> None:
         },
         "class_disagreement_populations": {
             "definition": (
-                "clean = single-candidate records whose PARSE candidate shares nothing "
+                "clean = single-candidate records whose RUBRIC candidate shares nothing "
                 "with {C, flip(C)}; shared_candidate = ambiguous X|Y candidate sets "
                 "(these usually include C or flip(C)); pooled = both"
             ),
             **population_blocks(tallies.class_votes),
             "pooled_ratio_note": (
-                "the pooled PARSE:DSSR ratio is a conservative lower bound: a referee "
+                "the pooled RUBRIC:DSSR ratio is a conservative lower bound: a referee "
                 "hit on a candidate shared with DSSR's class is scored for DSSR"
             ),
         },
@@ -232,7 +232,7 @@ def write_summary(tallies: Tallies, tools: dict) -> None:
             ),
             **leave_one_out_blocks(tallies.loo_votes),
         },
-        "parse_rejections_n_annotators_reporting": {
+        "rubric_rejections_n_annotators_reporting": {
             f"panel_{p}": dict(c) for p, c in fold(tallies.reject_report, lambda k: k[0]).items()
         },
         "python_only_n_annotators_reporting": {
@@ -262,20 +262,20 @@ def print_report(tallies: Tallies) -> None:
     print("\nclass disagreements by population (clean vs shared-candidate):")
     for pop, block in population_blocks(tallies.class_votes).items():
         v = block["verdicts"]
-        print(f"  {pop:<16} n={block['n']}: parse={v.get('parse', 0)}, "
-              f"dssr={v.get('dssr', 0)}, ratio={block['parse_dssr_ratio']}")
-    print("\nclass disagreements, leave-one-referee-out (PARSE:DSSR ratio):")
+        print(f"  {pop:<16} n={block['n']}: rubric={v.get('rubric', 0)}, "
+              f"dssr={v.get('dssr', 0)}, ratio={block['rubric_dssr_ratio']}")
+    print("\nclass disagreements, leave-one-referee-out (RUBRIC:DSSR ratio):")
     for definition, block in leave_one_out_blocks(tallies.loo_votes).items():
         base = block["baseline"]
-        print(f"  {definition} (n={base['n']}): baseline={base['parse_dssr_ratio']}, "
-              + ", ".join(f"-{t}={b['parse_dssr_ratio']}" for t, b in block["dropped"].items())
-              + f"  range={block['parse_dssr_ratio_range']}")
-    print("\nPARSE rejections: how many annotators corroborate DSSR's pair:")
+        print(f"  {definition} (n={base['n']}): baseline={base['rubric_dssr_ratio']}, "
+              + ", ".join(f"-{t}={b['rubric_dssr_ratio']}" for t, b in block["dropped"].items())
+              + f"  range={block['rubric_dssr_ratio_range']}")
+    print("\nRUBRIC rejections: how many annotators corroborate DSSR's pair:")
     for p, c in sorted(fold(tallies.reject_report, lambda k: k[0]).items()):
         tot = sum(c.values())
         print(f"  panel of {p} (n={tot}): "
               + ", ".join(f"{k} of {p}: {n} ({100*n/tot:.1f}%)" for k, n in sorted(c.items())))
-    print("\npython_only: annotators reporting PARSE's pair:")
+    print("\npython_only: annotators reporting RUBRIC's pair:")
     for bp, c in sorted(fold(tallies.ponly_report, lambda k: (k[0], k[1])).items()):
         tot = sum(c.values())
         print(f"  {bp[0]}, panel of {bp[1]} (n={tot}): "
@@ -297,10 +297,10 @@ def _print_per_tool(per_tool: Counter) -> None:
             if not cov:
                 continue
             if bucket == "class_disagreement":
-                vp = per_tool[(bucket, tool, "votes_parse")]
+                vp = per_tool[(bucket, tool, "votes_rubric")]
                 vd = per_tool[(bucket, tool, "votes_dssr")]
                 vb = per_tool.get((bucket, tool, "votes_both"), 0)
-                print(f"    {tool:<8} covered {cov:>6}: votes PARSE {vp} ({100*vp/cov:.1f}%), "
+                print(f"    {tool:<8} covered {cov:>6}: votes RUBRIC {vp} ({100*vp/cov:.1f}%), "
                       f"votes DSSR {vd} ({100*vd/cov:.1f}%), both {vb}")
             else:
                 rep = per_tool.get((bucket, tool, "reports"), 0)

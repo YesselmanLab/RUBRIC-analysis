@@ -72,7 +72,7 @@ def prepare(job):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--input", type=Path, default=ROOT / "data/structures")
-    ap.add_argument("--cohort", type=Path, default=ROOT / "data/benchmark/dssr_PARSE_time_benchmark.csv")
+    ap.add_argument("--cohort", type=Path, default=ROOT / "data/benchmark/dssr_RUBRIC_time_benchmark.csv")
     ap.add_argument("--output", type=Path, default=ROOT / ".runtime-tools/clarna-inputs")
     ap.add_argument("--pdbs")
     ap.add_argument("--runs", type=int, default=3)

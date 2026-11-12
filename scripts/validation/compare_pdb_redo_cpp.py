@@ -28,7 +28,7 @@ def _init_worker(engine: str, redo_cache: Path) -> None:
     _REDO_CACHE = redo_cache
 
 
-def run_parse(arg: str) -> dict | None:
+def run_rubric(arg: str) -> dict | None:
     src = [arg] if Path(arg).exists() else _engine.structure_args(arg)
     try:
         out = subprocess.run([_ENGINE, *src], capture_output=True, text=True, timeout=900)
@@ -93,15 +93,15 @@ def match_pairs(orig: list[dict], redo: list[dict]) -> list[dict]:
 
 
 def process_one(pdb: str) -> dict:
-    do = run_parse(pdb)
+    do = run_rubric(pdb)
     if do is None:
-        return {"status": "fail", "failure": {"pdb": pdb, "stage": "original", "error": "parse failed"}}
+        return {"status": "fail", "failure": {"pdb": pdb, "stage": "original", "error": "rubric failed"}}
     redo_file = _REDO_CACHE / pdb / f"{pdb}.pdb"
     if not redo_file.exists():
         return {"status": "fail", "failure": {"pdb": pdb, "stage": "redo", "error": "no cached redo pdb"}}
-    dr = run_parse(str(redo_file))
+    dr = run_rubric(str(redo_file))
     if dr is None:
-        return {"status": "fail", "failure": {"pdb": pdb, "stage": "redo", "error": "parse failed"}}
+        return {"status": "fail", "failure": {"pdb": pdb, "stage": "redo", "error": "rubric failed"}}
     o_struct, o_pairs = extract(do)
     r_struct, r_pairs = extract(dr)
     matched = match_pairs(o_pairs, r_pairs)
@@ -133,7 +133,7 @@ def main() -> None:
     ap.add_argument("--redo-cache", type=Path, default=REDO_CACHE)
     ap.add_argument("--pdb-list", type=Path, default=None,
                     help="explicit id list (default: every cached REDO structure)")
-    ap.add_argument("--engine", default=None, help="path to `parse` (else PARSE_ENGINE / PATH)")
+    ap.add_argument("--engine", default=None, help="path to `rubric` (else RUBRIC_ENGINE / PATH)")
     ap.add_argument("--out-all", type=Path, default=OUT_ALL)
     ap.add_argument("--out-pairs", type=Path, default=OUT_PAIRS)
     ap.add_argument("--limit", type=int, default=None)
@@ -177,11 +177,11 @@ def main() -> None:
         "method": {
             "_documentation": [
                 "Structure-level scores on original (RCSB) vs PDB-REDO coordinates,",
-                "both scored by the production C++ `parse` binary (find+classify+score).",
+                "both scored by the production C++ `rubric` binary (find+classify+score).",
                 "Schema 3.0: no `overall`; backbone reported as `backbone_suiteness` (0-1).",
                 "Raw scores only; deltas computed in-notebook.",
             ],
-            "scorer": "cpp:parse",
+            "scorer": "cpp:rubric",
         },
         "summary": {"n_attempted": len(pdbs), "n_paired": len(results),
                     "n_failed": len(failures), "pairs_score": ps},
@@ -209,10 +209,10 @@ def main() -> None:
         "method": {
             "_documentation": [
                 "Per matched base pair: score on original vs PDB-REDO coordinates,",
-                "both from the production C++ `parse` binary.",
+                "both from the production C++ `rubric` binary.",
                 "Matched by (res_id1, res_id2, lw_class); both orientations tried.",
             ],
-            "scorer": "cpp:parse",
+            "scorer": "cpp:rubric",
         },
         "summary": pair_summary, "pairs": all_pairs, "failures": failures,
     }

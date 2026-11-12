@@ -1,6 +1,6 @@
 """Score the example base pairs shown in Figure 3 and record their flagged properties.
 
-Runs `parse --details` on each structure and writes, for every example pair, its LW class,
+Runs `rubric --details` on each structure and writes, for every example pair, its LW class,
 score and the severity of each flagged property. Figure 3B reads the scores and Figure 3C
 the severities (points lost = penalty weight x severity).
 """
@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 import _engine
-from _engine import run_parse
+from _engine import run_rubric
 
 REPO = Path(__file__).resolve().parent.parent.parent
 DEFAULT_OUT = REPO / "data" / "reference" / "figure3" / "example_pairs.json"
@@ -32,13 +32,13 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--output", type=Path, default=DEFAULT_OUT)
-    ap.add_argument("--engine", default=None, help="path to `parse` (else PARSE_ENGINE / PATH)")
+    ap.add_argument("--engine", default=None, help="path to `rubric` (else RUBRIC_ENGINE / PATH)")
     args = ap.parse_args()
 
     engine = _engine.find_engine(args.engine)
     out = []
     for panel, role, pdb, r1, r2 in EXAMPLES:
-        d = run_parse(pdb, engine)
+        d = run_rubric(pdb, engine)
         hit = [p for p in d.get("pairs", []) if {p["res_id1"], p["res_id2"]} == {r1, r2}]
         if len(hit) != 1:
             raise SystemExit(f"{pdb} {r1}-{r2}: expected one pair, found {len(hit)}")

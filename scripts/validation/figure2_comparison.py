@@ -9,8 +9,8 @@ import re
 import numpy as np
 import pandas as pd
 
-TOOLS = ["parse", "dssr", "fr3d", "rnaview", "barnaba", "rnapolis", "bpnet"]
-LABELS = ["FastRNA", "DSSR", "FR3D", "RNAView", "barnaba", "RNApolis", "BPNET"]
+TOOLS = ["rubric", "dssr", "fr3d", "rnaview", "barnaba", "rnapolis", "bpnet"]
+LABELS = ["RUBRIC", "DSSR", "FR3D", "RNAView", "barnaba", "RNApolis", "BPNet"]
 IDENTIFIED = frozenset({"selected", "competition", "ineligible", "stacking", "low_score"})
 NONCWW = ["tWW", "cWH", "tWH", "cWS", "tWS", "cHH", "tHH", "cHS", "tHS", "cSS", "tSS"]
 CLASSES = ["cWW (canon)", "cWW (non-canon)", *NONCWW]
@@ -86,10 +86,10 @@ class Comparison:
 
     @cached_property
     def candidates(self):
-        raw = self.read("parse_candidates.json")
+        raw = self.read("rubric_candidates.json")
         if raw.get("_meta", {}).get("label_order") != "input_residue_order":
-            raise ValueError("Regenerate parse_candidates.json with the orientation-corrected "
-                             "dump-selection export; see scripts/validation/extract_parse_candidates.py")
+            raise ValueError("Regenerate rubric_candidates.json with the orientation-corrected "
+                             "dump-selection export; see scripts/validation/extract_rubric_candidates.py")
         return raw
 
     @cached_property
@@ -98,7 +98,7 @@ class Comparison:
 
     @cached_property
     def cohort(self):
-        selected = self.read("parse_pairs.json")
+        selected = self.read("rubric_pairs.json")
         return frozenset(pdb for pdb, record in selected.items()
                          if record.get("status") == "ok" and pdb not in self.excluded
                          and self.candidates.get(pdb, {}).get("status") == "ok")
@@ -131,7 +131,7 @@ class Comparison:
     def selected(self):
         return {pdb: {k: labels for k, labels in pairs.items()
                       if all(classified(lw) for lw in labels)}
-                for pdb, pairs in self.tool("parse").items()}
+                for pdb, pairs in self.tool("rubric").items()}
 
     @cached_property
     def identified(self):
@@ -146,7 +146,7 @@ class Comparison:
         return out
 
     def pairsets(self):
-        return {t: self.identified if t == "parse" else self.tool(t) for t in TOOLS}
+        return {t: self.identified if t == "rubric" else self.tool(t) for t in TOOLS}
 
     @lru_cache(maxsize=None)
     def credited(self, comparator):
@@ -160,7 +160,7 @@ class Comparison:
             raise ValueError(f"Unknown comparison stage: {stage}")
 
         def pairs(tool, partner):
-            if tool != "parse":
+            if tool != "rubric":
                 return self.tool(tool)
             return self.credited(partner) if stage == "credited" else getattr(self, stage)
 
@@ -182,7 +182,7 @@ class Comparison:
         return canon_lw(lw)
 
     @lru_cache(maxsize=None)
-    def detection_counts(self, a="parse", b="dssr", stage="credited"):
+    def detection_counts(self, a="rubric", b="dssr", stage="credited"):
         pa, pb = self.pair_lists(a, b, stage)
         pdbs = sorted(pa.keys() & pb.keys())
         shared, union = np.zeros((len(pdbs), 2)), np.zeros((len(pdbs), 2))
@@ -200,7 +200,7 @@ class Comparison:
         return pdbs, shared, union, excluded
 
     @lru_cache(maxsize=None)
-    def class_counts(self, a="parse", b="dssr", stage="credited"):
+    def class_counts(self, a="rubric", b="dssr", stage="credited"):
         pa, pb = self.pair_lists(a, b, stage)
         pdbs = sorted(pa.keys() & pb.keys())
         same, shared = np.zeros((len(pdbs), 2)), np.zeros((len(pdbs), 2))

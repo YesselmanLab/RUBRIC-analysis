@@ -30,7 +30,7 @@ def fetch_one(pdb: str, out_dir: Path) -> tuple[str, str]:
     dest = out_dir / pdb / f"{pdb}.pdb"
     if dest.exists() and dest.stat().st_size > 0:
         return pdb, "cached"
-    req = Request(URL.format(p=pdb.lower()), headers={"User-Agent": "FastRNA-Analysis"})
+    req = Request(URL.format(p=pdb.lower()), headers={"User-Agent": "RUBRIC-analysis"})
     try:
         with urlopen(req, timeout=60) as r:
             data = r.read()

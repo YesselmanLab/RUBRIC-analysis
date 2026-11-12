@@ -1,7 +1,7 @@
-# FastRNA-Analysis
+# RUBRIC-analysis
 
-Notebooks, figures, and the full data-generation pipeline for the PARSE
-manuscript. Everything here is reproducible from the public PARSE-RNA engine and
+Notebooks, figures, and the full data-generation pipeline for the RUBRIC
+manuscript. Everything here is reproducible from the public RUBRIC engine and
 the archived data - from viewing a finished figure down to regenerating every
 feature from raw structures.
 
@@ -14,10 +14,12 @@ notebooks/
 figures/
   main/                  rendered main-text PNGs
   supplemental/          rendered supplemental PNGs
+  source_data/           tables behind the plotted values
+  schematics/            component images of the Figure 1 workflow
 scripts/
   data_gen/              feature + scoring-table regeneration
   validation/            PDB-REDO validation + tool comparison
-  benchmark/             runtime benchmark of PARSE and six other annotators
+  benchmark/             runtime benchmark of RUBRIC and six other annotators
   fetch_data.sh          download the data archive into data/
   fetch_structures.py    download the mmCIF structures into data/structures/
 data/                    fetched from the archive (not in git)
@@ -31,8 +33,8 @@ data/                    fetched from the archive (not in git)
 Requires Python 3.12.
 
 ```bash
-git clone https://github.com/YesselmanLab/FastRNA-Analysis.git
-cd FastRNA-Analysis
+git clone https://github.com/YesselmanLab/RUBRIC-analysis.git
+cd RUBRIC-analysis
 pip install -r requirements.txt
 ```
 
@@ -72,18 +74,17 @@ Run them in this order: `calculate_penalty_weights.py` reads the tables the
 others write.
 
 ### Level 3: Regenerate the feature tables from raw structures
-The feature CSVs come straight from the PARSE C++ engine. Build the engine,
-then re-extract:
-
-Run everything below from the repo root (`FastRNA-Analysis/`); the engine is
+The feature CSVs come straight from the RUBRIC C++ engine
+(https://github.com/YesselmanLab/RUBRIC). Build it, then re-extract; run
+everything below from the repo root (`RUBRIC-analysis/`), so the engine is
 cloned as a sibling of `scripts/` and `data/`.
 
 ```bash
 # 1. Build the engine (C++20, CMake >= 3.28): from the repo root
-git clone https://github.com/KamshinenD/PARSE-RNA
-cmake -S PARSE-RNA -B PARSE-RNA/build -DCMAKE_BUILD_TYPE=Release
-cmake --build PARSE-RNA/build -j
-export PARSE_ENGINE="$PWD/PARSE-RNA/build/parse"     # or put `parse` on PATH
+git clone https://github.com/YesselmanLab/RUBRIC
+cmake -S RUBRIC -B RUBRIC/build -DCMAKE_BUILD_TYPE=Release
+cmake --build RUBRIC/build -j
+export RUBRIC_ENGINE="$PWD/RUBRIC/build/rubric"     # or put `rubric` on PATH
 
 # 2. Re-extract every feature table (the engine reads data/structures/<ID>.cif;
 #    an entry that is not there is downloaded into data/structures/engine_cache/)
@@ -102,8 +103,8 @@ python extract_pair_features.py \
 ```
 
 Then rebuild the tables (Level 2) and the figures (Level 1). Both extractors take
-`--limit N` for a quick smoke test and `--engine /path/to/parse` to override
-`PARSE_ENGINE`.
+`--limit N` for a quick smoke test and `--engine /path/to/rubric` to override
+`RUBRIC_ENGINE`.
 
 #### Validation data (PDB-REDO)
 The PDB-REDO comparison behind the validation figure is regenerated the same
@@ -125,17 +126,20 @@ re-fetch may add or refresh a few entries versus the archived comparison.
 
 #### Other analysis scripts
 
-Run from the repo root. Scripts marked *engine* need `PARSE_ENGINE` (Level 3);
+Run from the repo root. Scripts marked *engine* need `RUBRIC_ENGINE` (Level 3);
 those marked *structures* read `data/structures/` (see [Structures](#structures-datastructures)).
 
 | script | writes | needs |
 |---|---|---|
-| `scripts/reference/score_pairs_uniques.py` | `data/reference/scores/pair_scores_uniques_parse.jsonl` | engine, structures |
+| `scripts/reference/score_pairs_uniques.py` | `data/reference/scores/pair_scores_uniques_rubric.jsonl` | engine, structures |
+| `scripts/data_gen/extract_pucker.py` | `data/reference/high_quality_features/pucker.csv` (Fig. S2D) | engine, structures |
+| `scripts/data_gen/extract_figure3_examples.py` | `data/reference/figure3/example_pairs.json` (Fig. 3) | engine, structures |
+| `scripts/validation/build_review_points.py` | `data/reference/resolved_again/redo_per_structure_points.csv`, `issue_rates_per_unit.csv` (Fig. 4, Fig. S1) | engine, structures |
 | `scripts/reference/count_nucleotides.py` | nucleotide counts in `data/reference/metadata/metadata_cache.json` | structures |
 | `scripts/validation/build_resolved_cohort.py` | `data/reference/resolved_again/resolve_strict.csv` | |
 | `scripts/validation/time_reversal_resolved.py` | `resolve_pairs_matched.csv`, `data/validation/time_reversal_resolved.json` | engine |
 | `scripts/validation/time_reversal_controls.py` | `data/validation/time_reversal_controls.json` | |
-| `scripts/validation/extract_parse_candidates.py` | `data/comparison/parse_candidates.json` | engine, structures |
+| `scripts/validation/extract_rubric_candidates.py` | `data/comparison/rubric_candidates.json` | engine, structures |
 | `scripts/validation/extract_residue_names.py` | `data/comparison/residue_names.json` | structures |
 | `scripts/validation/adjudicate_consensus.py` | `data/validation/annotator_consensus.json` | |
 | `scripts/validation/consensus_reported_conflicts.py` | `data/validation/annotator_consensus_reported.json` | |
@@ -149,7 +153,7 @@ first, then the scripts that read `annotator_consensus.json`.
 
 #### Runtime benchmark
 
-The timing of FastRNA and the six other annotators is documented in
+The timing of RUBRIC and the six other annotators is documented in
 [`scripts/benchmark/README.md`](scripts/benchmark/README.md); it reads
 `data/structures/` and writes `data/benchmark/runtime_direct_all/`.
 
@@ -157,13 +161,10 @@ The timing of FastRNA and the six other annotators is documented in
 
 `data/` is not tracked in git (see `.gitignore`), so a fresh clone can **view**
 the figures (Level 0) but needs the archive fetched for anything below that
-(Levels 1-3). The fetch is a single command - see [Level 1](#level-1--re-run-the-figures-from-the-archived-data):
+(Levels 1-3). The fetch is the single command in
+[Level 1](#level-1-re-run-the-figures-from-the-archived-data).
 
-```bash
-bash scripts/fetch_data.sh
-```
-
-It downloads `data.zip` (~300 MB) from Google Drive and unzips it into `data/`.
+`scripts/fetch_data.sh` downloads `data.zip` (~300 MB) from Google Drive and unzips it into `data/`.
 Extraction is an update rather than a plain overwrite: a file is replaced only
 when the archived copy is newer than the one on disk, anything missing is added,
 and tables regenerated locally (Levels 2-3) are newer and so survive. Re-running
@@ -173,9 +174,9 @@ clobbering your own. The archive will later be moved to Zenodo.
 ### Structures (`data/structures/`)
 
 The mmCIF files are not in the archive (12 GB); they are downloaded straight from
-RCSB. Every script reads structures from here; when the engine is given an entry
-that is not here it downloads it into `data/structures/engine_cache/`, so nothing
-is read from or written to anywhere outside the repository. Fetch them with:
+RCSB. Every script reads structures from here (the engine's downloads go to
+`data/structures/engine_cache/`, see Level 3), so nothing is read from or written
+to anywhere outside the repository. Fetch them with:
 
 ```bash
 python scripts/fetch_structures.py            # the 2,697 non-redundant RNAs (~12 GB)
@@ -197,9 +198,9 @@ the copy used in the paper; the runtime benchmark records each file's checksum.
 | `high_quality_features/` | per-pair / per-hbond / per-residue features (curated set) |
 | `low_quality_features/` | same, for the non-curated set (penalty-weight derivation) |
 | `scoring_tables/` | ProSco / Z′ / backbone / penalty-weight tables |
-| `scores/`, `metadata/` | per-structure PARSE scores and PDB metadata; per-pair scores (`pair_scores_uniques_parse.jsonl`, one row per selected pair, each non-redundant entry scored once) are regenerated by `scripts/reference/score_pairs_uniques.py`; nucleotide counts in `metadata_cache.json` are recomputed from the local structure files by `scripts/reference/count_nucleotides.py` (counts every residue of an RNA/DNA polymer entity, so modified, locked and L-nucleotides are included) |
-| `resolved_again/` | the re-solved cohort (`resolve_strict.csv`, built by `scripts/validation/build_resolved_cohort.py`) and the per-molecule / per-structure tables behind Figure 4; see its `PROVENANCE.txt` |
-| `engine_archive/` | engine output the re-solved cohort builder reads: per-residue and per-pair rows for the non-redundant set and for the extra members of each BGSU equivalence class (read through `scripts/validation/_archive.py`) |
+| `scores/`, `metadata/` | per-structure RUBRIC scores and PDB metadata; per-pair scores (`pair_scores_uniques_rubric.jsonl`, one row per selected pair, each non-redundant entry scored once) are regenerated by `scripts/reference/score_pairs_uniques.py`; nucleotide counts in `metadata_cache.json` are recomputed from the local structure files by `scripts/reference/count_nucleotides.py` (counts every residue of an RNA/DNA polymer entity, so modified, locked and L-nucleotides are included) |
+| `resolved_again/` | the better-resolution cohort (`resolve_strict.csv`, built by `scripts/validation/build_resolved_cohort.py`) and the per-molecule / per-structure tables behind Figure 4; see its `PROVENANCE.txt` |
+| `engine_archive/` | engine output the better-resolution cohort builder reads: per-residue and per-pair rows for the non-redundant set and for the extra members of each BGSU equivalence class (read through `scripts/validation/_archive.py`) |
 
 ### PyMOL sessions and images (`data/pymol/`)
 
@@ -210,5 +211,3 @@ the copy used in the paper; the runtime benchmark records each file's checksum.
 
 The notebooks read only `renders/`, never the sessions. The images are rendered
 from the sessions by a local script that is not part of the repository.
-
-The engine is public at https://github.com/KamshinenD/PARSE-RNA.

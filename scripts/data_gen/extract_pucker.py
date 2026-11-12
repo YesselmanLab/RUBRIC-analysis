@@ -1,8 +1,8 @@
 """Extract per-residue ribose pucker signals (delta and Pperp) for the high-quality reference set.
 
-Runs `parse dump-pucker`, which prints one row per scored residue that has both a delta
+Runs `rubric dump-pucker`, which prints one row per scored residue that has both a delta
 torsion and a Pperp distance: res_id, delta, Pperp, and whether the residue is in a helical
-canonical cWW pair. Used for the delta-vs-Pperp panel of Supplementary Fig. S5.
+canonical cWW pair. Used for the delta-vs-Pperp panel of Supplementary Fig. S2.
 """
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ def main() -> None:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--reference-set", type=Path, default=DEFAULT_REF)
     ap.add_argument("--output", type=Path, default=DEFAULT_OUT)
-    ap.add_argument("--engine", default=None, help="path to `parse` (else PARSE_ENGINE / PATH)")
+    ap.add_argument("--engine", default=None, help="path to `rubric` (else RUBRIC_ENGINE / PATH)")
     ap.add_argument("--workers", type=int, default=0, help="0 = cpu_count")
     ap.add_argument("--limit", type=int, default=0)
     args = ap.parse_args()

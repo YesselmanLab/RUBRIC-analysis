@@ -1,4 +1,4 @@
-"""Referee votes on FastRNA-DSSR class conflicts, restricted to the conflicts that Supplementary Figure S2A also counts."""
+"""Referee votes on RUBRIC-DSSR class conflicts, restricted to the conflicts that Supplementary Figure S3A also counts."""
 import json
 import sys
 from collections import Counter
@@ -51,22 +51,22 @@ def tally(records, panels_by_tool):
                  for t, p in panels_by_tool.items() if r.pdb_id in p}
         if not found:
             continue
-        sides = annotators.vote_sides(r.disputed_class, r.parse_candidates)
+        sides = annotators.vote_sides(r.disputed_class, r.rubric_candidates)
         if sides is None:
             degenerate += 1
             continue
         n += 1
-        dssr_side, parse_side = sides
+        dssr_side, rubric_side = sides
         for tool, classes in found.items():
             per_tool[(tool, "covered")] += 1
             per_pdb[(tool, r.pdb_id, "covered")] += 1
-            if classes & parse_side:
-                per_tool[(tool, "votes_parse")] += 1
-                per_pdb[(tool, r.pdb_id, "votes_parse")] += 1
+            if classes & rubric_side:
+                per_tool[(tool, "votes_rubric")] += 1
+                per_pdb[(tool, r.pdb_id, "votes_rubric")] += 1
             if classes & dssr_side:
                 per_tool[(tool, "votes_dssr")] += 1
                 per_pdb[(tool, r.pdb_id, "votes_dssr")] += 1
-    keys = ("covered", "votes_parse", "votes_dssr")
+    keys = ("covered", "votes_rubric", "votes_dssr")
     by_structure = {t: {pdb: [per_pdb[(t, pdb, k)] for k in keys]
                         for pdb in sorted({p for (tt, p, _) in per_pdb if tt == t})}
                     for t in REFEREES}
@@ -82,7 +82,7 @@ def main():
     published = json.loads((ROOT / "data/validation/annotator_consensus.json").read_text())
     pub = published["per_annotator"]
     for t in REFEREES:
-        for k in ("covered", "votes_parse", "votes_dssr"):
+        for k in ("covered", "votes_rubric", "votes_dssr"):
             want = pub.get(f"class_disagreement|{t}|{k}", 0)
             if full[t][k] != want:
                 sys.exit(f"does not reproduce annotator_consensus.json: {t} {k} "
@@ -92,7 +92,7 @@ def main():
     keep = s1a_conflicts()
     shared, degenerate, n, by_structure = tally(class_records(keep), panels)
     out = {
-        "population": "class conflicts counted in S2A: filed under FastRNA's class with "
+        "population": "class conflicts counted in S2A: filed under RUBRIC's class with "
                       "a complete DSSR class, and voted from DSSR's side as in "
                       "annotator_consensus.json",
         "n_s1a_conflicts": len(keep),
@@ -101,7 +101,7 @@ def main():
         "referees": list(REFEREES),
         "per_annotator": {f"class_disagreement|{t}|{k}": v
                           for t, d in shared.items() for k, v in d.items()},
-        "per_structure_fields": ["covered", "votes_parse", "votes_dssr"],
+        "per_structure_fields": ["covered", "votes_rubric", "votes_dssr"],
         "per_structure": by_structure,
         "provenance": "same July differences inventory and referee files as "
                       "annotator_consensus.json; vote logic from "
@@ -110,8 +110,8 @@ def main():
     OUT.write_text(json.dumps(out, indent=1) + "\n")
     for t in REFEREES:
         d = shared[t]
-        print(f"  {t:9s} covered {d['covered']:6,d}  FastRNA "
-              f"{100 * d['votes_parse'] / d['covered']:5.1f}%  DSSR "
+        print(f"  {t:9s} covered {d['covered']:6,d}  RUBRIC "
+              f"{100 * d['votes_rubric'] / d['covered']:5.1f}%  DSSR "
               f"{100 * d['votes_dssr'] / d['covered']:5.1f}%")
     print("wrote", OUT.relative_to(ROOT))
 

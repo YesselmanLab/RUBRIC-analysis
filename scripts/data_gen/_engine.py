@@ -1,4 +1,4 @@
-"""Run the PARSE C++ engine (`parse --details`) and return its JSON."""
+"""Run the RUBRIC C++ engine (`rubric --details`) and return its JSON."""
 
 import json
 import os
@@ -20,16 +20,16 @@ def structure_args(pdb_id: str) -> list[str]:
 
 
 def find_engine(explicit: str | None = None) -> str:
-    for cand in (explicit, os.environ.get("PARSE_ENGINE"), shutil.which("parse")):
+    for cand in (explicit, os.environ.get("RUBRIC_ENGINE"), shutil.which("rubric")):
         if cand and Path(cand).exists():
             return str(Path(cand).resolve())
     raise FileNotFoundError(
-        "PARSE engine not found. Build PARSE-RNA and set PARSE_ENGINE=/path/to/parse "
-        "(or put `parse` on PATH)."
+        "RUBRIC engine not found. Build RUBRIC and set RUBRIC_ENGINE=/path/to/rubric "
+        "(or put `rubric` on PATH)."
     )
 
 
-def run_parse(pdb_id: str, engine: str, cache_dir: str | None = None) -> dict:
+def run_rubric(pdb_id: str, engine: str, cache_dir: str | None = None) -> dict:
     fd, out = tempfile.mkstemp(suffix=".json")
     os.close(fd)
     try:
@@ -37,7 +37,7 @@ def run_parse(pdb_id: str, engine: str, cache_dir: str | None = None) -> dict:
         cmd = [engine, *src, "--details", "--out", out]
         r = subprocess.run(cmd, capture_output=True, text=True)
         if r.returncode != 0 or os.path.getsize(out) == 0:
-            raise RuntimeError(f"parse failed for {pdb_id}: {r.stderr.strip()[:200]}")
+            raise RuntimeError(f"rubric failed for {pdb_id}: {r.stderr.strip()[:200]}")
         with open(out) as f:
             return json.load(f)
     finally:

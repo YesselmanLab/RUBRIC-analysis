@@ -25,7 +25,7 @@ def scored_pairs(pdb: str) -> list[dict]:
     r = subprocess.run([_engine.find_engine(), *_engine.structure_args(pdb), "--details", "--out", out],
                        capture_output=True, text=True)
     if r.returncode != 0:
-        raise RuntimeError(f"parse failed for {pdb}: {r.stderr.strip()[:160]}")
+        raise RuntimeError(f"rubric failed for {pdb}: {r.stderr.strip()[:160]}")
     d = json.loads(Path(out).read_text())
     Path(out).unlink(missing_ok=True)
     rows = []
@@ -99,7 +99,7 @@ def main(rebuild: bool = False):
 
     ctl = paired_control(df, "rep", "score_w", "score_b", CUT)
     ctl["cohort"] = "re-solved (independent re-determination of the same molecule)"
-    ctl["source"] = "data/reference/resolved_again/resolve_strict.csv + parse --details"
+    ctl["source"] = "data/reference/resolved_again/resolve_strict.csv + rubric --details"
     ctl["unit"] = "molecule"
     ctl["matching"] = ("chain cw/cb, key = (resnum, base) x2 + lw_class, both orientations")
     ctl["threshold"] = CUT

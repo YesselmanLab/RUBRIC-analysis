@@ -44,7 +44,7 @@ def public_requirement(line):
 
 def public_command(command, work, config):
     python_bin = Path(config["python"]).parent
-    names = {config.get(k): k for k in ("parse", "rnaview", "bpnet") if config.get(k)}
+    names = {config.get(k): k for k in ("rubric", "rnaview", "bpnet") if config.get(k)}
     names.update({config.get("dssr"): "x3dna-dssr", config["python"]: "python",
                   str(python_bin / "barnaba"): "barnaba", str(python_bin / "annotator"): "annotator"})
     if config.get("clarna"):
@@ -60,9 +60,9 @@ def public_command(command, work, config):
 
 def command_for(tool, cif, work, config):
     python_bin = Path(config["python"]).parent
-    if tool.startswith("parse"):
-        command = [config["parse"], str(cif), "--no-download", "--cache-dir", str(work)]
-        return command + (["--no-score"] if tool == "parse_noscore" else [])
+    if tool.startswith("rubric"):
+        command = [config["rubric"], str(cif), "--no-download", "--cache-dir", str(work)]
+        return command + (["--no-score"] if tool == "rubric_noscore" else [])
     if tool == "dssr":
         return [config["dssr"], f"-i={cif}", "--pair-only"]
     if tool == "fr3d":
@@ -99,11 +99,11 @@ def clarna_pairs(graph):
 
 
 def validate_output(tool, cif, work, stdout, stderr):
-    if tool.startswith("parse"):
+    if tool.startswith("rubric"):
         data = json.loads(stdout)
         pairs = data.get("pairs", [])
         if not isinstance(pairs, list) or len(pairs) != data.get("n_pairs"):
-            raise ValueError("Incomplete PARSE pair output")
+            raise ValueError("Incomplete RUBRIC pair output")
         return pairs
     if tool == "dssr":
         match = re.search(r"total number of base pairs:\s*(\d+)", stdout + stderr)
@@ -210,7 +210,7 @@ def main():
     ap.add_argument("--config", type=Path, default=ROOT / ".runtime-tools/config.json")
     ap.add_argument("--input", type=Path, default=ROOT / "data/structures",
                     help="folder of <ID>.cif files (scripts/fetch_structures.py)")
-    ap.add_argument("--cohort", type=Path, default=ROOT / "data/benchmark/dssr_PARSE_time_benchmark.csv")
+    ap.add_argument("--cohort", type=Path, default=ROOT / "data/benchmark/dssr_RUBRIC_time_benchmark.csv")
     ap.add_argument("--clarna-input", type=Path, default=ROOT / ".runtime-tools/clarna-inputs",
                     help="prepared <ID>.pdb files for ClaRNA (scripts/benchmark/clarna_input.py)")
     ap.add_argument("--output", type=Path, required=True)
@@ -268,8 +268,8 @@ def main():
                 for r in rows]
     executables = {"python": config["python"]}
     for tool in tools:
-        if tool.startswith("parse") or tool in ("dssr", "rnaview", "bpnet"):
-            key = "parse" if tool.startswith("parse") else tool
+        if tool.startswith("rubric") or tool in ("dssr", "rnaview", "bpnet"):
+            key = "rubric" if tool.startswith("rubric") else tool
             executables[key] = config[key]
         elif tool in ("barnaba", "rnapolis"):
             executables[tool] = str(Path(config["python"]).parent / ("annotator" if tool == "rnapolis" else tool))

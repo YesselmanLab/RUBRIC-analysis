@@ -19,7 +19,7 @@ figures/pse/
 *.cif
 *.zip
 # Working copy of the S5 analysis; the figure notebook is
-# notebooks/supplemental_figures/figS5.ipynb.
+# notebooks/supplemental_figures/figS3.ipynb.
 notebooks/backbone_and_pucker.ipynb
 notebooks/suite_outliers.ipynb
 
@@ -31,3 +31,6 @@ notebooks/predictive_value_and_robustness.ipynb
 
 # Notebook result caches (rebuilt automatically when data/ changes).
 .cache/
+
+# Backup of the removed Fig. S3C panel (per-class agreement with RUBRIC); local only.
+notebooks/figS3C_class_agreement_backup/

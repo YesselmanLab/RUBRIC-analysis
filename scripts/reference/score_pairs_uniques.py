@@ -1,4 +1,4 @@
-"""Per-pair FastRNA scores over the non-redundant set."""
+"""Per-pair RUBRIC scores over the non-redundant set."""
 from __future__ import annotations
 
 import argparse
@@ -14,8 +14,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 UNIQUES = REPO / "data" / "reference" / "reference_sets" / "uniqueRNAS.csv"
 STRUCTURES = REPO / "data" / "structures"
-OUT = REPO / "data" / "reference" / "scores" / "pair_scores_uniques_parse.jsonl"
-ENGINE = os.environ.get("PARSE_ENGINE") or shutil.which("parse") or "parse"
+OUT = REPO / "data" / "reference" / "scores" / "pair_scores_uniques_rubric.jsonl"
+ENGINE = os.environ.get("RUBRIC_ENGINE") or shutil.which("rubric") or "rubric"
 
 
 def distinct_ids(path: Path) -> list[str]:

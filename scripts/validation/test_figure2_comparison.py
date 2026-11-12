@@ -26,8 +26,8 @@ class ComparisonTests(unittest.TestCase):
             ["A", "90", "A", "100", None, "ineligible"],
             ["A", "110", "A", "120", "cWW", "invalid"],
         ]
-        write("parse_pairs.json", {p: {"status": "ok", "pairs": selected} for p in ["P1", "OLD"]})
-        write("parse_candidates.json", {
+        write("rubric_pairs.json", {p: {"status": "ok", "pairs": selected} for p in ["P1", "OLD"]})
+        write("rubric_candidates.json", {
             "P1": {"status": "ok", "pairs": candidates},
             "OLD": {"status": "ok", "pairs": candidates},
             "_meta": {"label_order": "input_residue_order", "fallback_to_output": ["OLD"]},
@@ -43,8 +43,8 @@ class ComparisonTests(unittest.TestCase):
 
     def test_identification_does_not_depend_on_comparator(self):
         original = {k: set(v) for k, v in self.c.identified["P1"].items()}
-        self.c.detection_counts("parse", "dssr")
-        self.c.detection_counts("parse", "barnaba")
+        self.c.detection_counts("rubric", "dssr")
+        self.c.detection_counts("rubric", "barnaba")
         self.assertEqual(self.c.identified["P1"], original)
         self.assertEqual(len(original), 5)
         self.assertEqual(self.c.metrics("identified")["tWW"]["total_python"], 1)
@@ -69,13 +69,13 @@ class ComparisonTests(unittest.TestCase):
         self.assertEqual(self.c.metrics()["tWH"]["matched"], 0)
 
     def test_selected_pairs_remain_even_without_comparator_support(self):
-        _, shared, union, _ = self.c.detection_counts("parse", "barnaba")
+        _, shared, union, _ = self.c.detection_counts("rubric", "barnaba")
         self.assertEqual(shared.sum(), 0)
         self.assertEqual(union.sum(), 2)
 
     def test_conditioned_detection_is_symmetric_and_class_counts_are_preserved(self):
-        forward = self.c.detection_counts("parse", "dssr")
-        reverse = self.c.detection_counts("dssr", "parse")
+        forward = self.c.detection_counts("rubric", "dssr")
+        reverse = self.c.detection_counts("dssr", "rubric")
         self.assertEqual(forward[0], reverse[0])
         self.assertTrue((forward[1] == reverse[1]).all())
         self.assertTrue((forward[2] == reverse[2]).all())

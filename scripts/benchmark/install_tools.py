@@ -82,7 +82,7 @@ def compiler(prefix):
 
 
 def check(config, env):
-    for key in ("python", "parse", "dssr", "rnaview", "bpnet"):
+    for key in ("python", "rubric", "dssr", "rnaview", "bpnet"):
         if not os.access(config[key], os.X_OK):
             raise RuntimeError(f"Missing executable {key}: {config[key]}")
     for key in ("rnaview_home", "bpnet_sysfiles"):
@@ -106,8 +106,8 @@ def main():
     ap.add_argument("--python", help="Python 3.12 executable for the isolated environment")
     ap.add_argument("--dssr", help="Path to your existing licensed x3dna-dssr executable")
     ap.add_argument("--tools-dir", type=Path, default=ROOT / ".runtime-tools")
-    ap.add_argument("--parse-source", type=Path, default=ROOT / "PARSE-RNA",
-                    help="PARSE engine checkout (default: PARSE-RNA/, cloned as in the main README)")
+    ap.add_argument("--rubric-source", type=Path, default=ROOT / "RUBRIC",
+                    help="RUBRIC engine checkout (default: RUBRIC/, cloned as in the main README)")
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--check", action="store_true", help="Verify the existing installation without rebuilding")
     args = ap.parse_args()
@@ -134,7 +134,7 @@ def main():
         checkout = dest / "src" / name
         if not checkout.exists():
             run(["git", "clone", "--branch", branch, url, checkout])
-        head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=checkout, text=True).strip()
+        head = subprocess.check_output(["git", "rev-rubric", "HEAD"], cwd=checkout, text=True).strip()
         dirty = subprocess.check_output(["git", "diff", "HEAD", "--name-only"], cwd=checkout, text=True).strip()
         if dirty:
             raise RuntimeError(f"Tracked source changes in {checkout}; preserve them and use a fresh --tools-dir")
@@ -153,16 +153,16 @@ def main():
     run([fc, "-O3", "-std=legacy", "-fallow-argument-mismatch", "-c", "libbpfind.f", "-o", "libbpfind.o"], cwd=bp, log=log)
     run([cxx, "-O3", "-std=c++11", "-I./include", "-c", "main.cpp", "-o", "main.o"], cwd=bp, log=log)
     run([cxx, "main.o", "libbpfind.o", "-o", "bpnet", "-lgfortran"], cwd=bp, log=log)
-    source = args.parse_source.resolve()
-    build = dest / "parse-build"
+    source = args.rubric_source.resolve()
+    build = dest / "rubric-build"
     command = ["cmake", "-S", source, "-B", build, "-DCMAKE_BUILD_TYPE=Release"]
     gemmi = source / "build/_deps/gemmi-src"
     if gemmi.exists():
         command.append(f"-DFETCHCONTENT_SOURCE_DIR_GEMMI={gemmi}")
-    run(command, log=dest / "parse-build.log")
-    run(["cmake", "--build", build, "--target", "parse", f"-j{args.jobs}"], log=dest / "parse-build.log")
+    run(command, log=dest / "rubric-build.log")
+    run(["cmake", "--build", build, "--target", "rubric", f"-j{args.jobs}"], log=dest / "rubric-build.log")
     packages = json.loads(subprocess.check_output([vpython, "-m", "pip", "list", "--format=json"], env=env, text=True))
-    config = {"python": str(vpython), "parse": str(build / "parse"), "dssr": dssr,
+    config = {"python": str(vpython), "rubric": str(build / "rubric"), "dssr": dssr,
               "rnaview_home": str(rv), "rnaview": str(rv / "bin/rnaview"),
               "bpnet": str(bp / "bpnet"), "bpnet_sysfiles": str(bp.parent / "sysfiles"),
               **install_clarna(dest, env),

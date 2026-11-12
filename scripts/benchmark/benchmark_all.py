@@ -17,7 +17,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
-TOOLS = ("parse", "parse_noscore", "dssr", "fr3d", "rnaview", "barnaba", "rnapolis", "bpnet", "clarna")
+TOOLS = ("rubric", "rubric_noscore", "dssr", "fr3d", "rnaview", "barnaba", "rnapolis", "bpnet", "clarna")
 THREAD_ENV = {key: "1" for key in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
               "VECLIB_MAXIMUM_THREADS", "NUMEXPR_NUM_THREADS", "BLIS_NUM_THREADS")}
 
@@ -212,7 +212,7 @@ def report(output, trials, manifest, tools, repeats):
     write_csv(output / "per_structure.csv", summary)
     lookup = {(r["pdb"], r["tool"]): r for r in summary}
     paired = []
-    for baseline in ("parse", "parse_noscore"):
+    for baseline in ("rubric", "rubric_noscore"):
         if baseline not in tools:
             continue
         for row in summary:
@@ -220,18 +220,18 @@ def report(output, trials, manifest, tools, repeats):
             if row["tool"] != baseline and row["median_seconds"] != "" and ref["median_seconds"] != "":
                 paired.append({"pdb": row["pdb"], "nucleotides": row["nucleotides"],
                                "tool": row["tool"], "baseline": baseline,
-                               "tool_seconds": row["median_seconds"], "parse_seconds": ref["median_seconds"],
+                               "tool_seconds": row["median_seconds"], "rubric_seconds": ref["median_seconds"],
                                "speedup": row["median_seconds"] / ref["median_seconds"]})
     write_csv(output / "speedups.csv", paired,
-              ["pdb", "nucleotides", "tool", "baseline", "tool_seconds", "parse_seconds", "speedup"])
+              ["pdb", "nucleotides", "tool", "baseline", "tool_seconds", "rubric_seconds", "speedup"])
     coverage = []
     for tool in tools:
         rows = [r for r in summary if r["tool"] == tool]
-        speedups = [r["speedup"] for r in paired if r["tool"] == tool and r["baseline"] == "parse"]
+        speedups = [r["speedup"] for r in paired if r["tool"] == tool and r["baseline"] == "rubric"]
         coverage.append({"tool": tool, "structures": len(rows),
                          "complete_stable": sum(r["median_seconds"] != "" for r in rows),
-                         "paired_with_parse": len(speedups),
-                         "median_speedup_vs_parse": statistics.median(speedups) if speedups else ""})
+                         "paired_with_rubric": len(speedups),
+                         "median_speedup_vs_rubric": statistics.median(speedups) if speedups else ""})
     write_csv(output / "coverage.csv", coverage)
 
 
@@ -239,7 +239,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--config", type=Path, default=ROOT / ".runtime-tools/config.json")
     ap.add_argument("--input", type=Path, default=ROOT / "data" / "structures")
-    ap.add_argument("--cohort", type=Path, default=ROOT / "data/benchmark/dssr_PARSE_time_benchmark.csv")
+    ap.add_argument("--cohort", type=Path, default=ROOT / "data/benchmark/dssr_RUBRIC_time_benchmark.csv")
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--tools", default=",".join(TOOLS))
     ap.add_argument("--runs", type=int, default=5)
@@ -272,8 +272,8 @@ def main():
                 "script_hashes": {name: sha(HERE / name) for name in
                     ("benchmark_all.py", "run_one.py", "_annotators.py")},
                 "executable_hashes": {k: sha(config[k]) for k in sorted({"python"} | {
-                    "parse" if t.startswith("parse") else t
-                    for t in tools if t.startswith("parse") or t in {"dssr", "rnaview", "bpnet"}})},
+                    "rubric" if t.startswith("rubric") else t
+                    for t in tools if t.startswith("rubric") or t in {"dssr", "rnaview", "bpnet"}})},
                 "installed_packages": subprocess.check_output(
                     [config["python"], "-m", "pip", "freeze", "--disable-pip-version-check"],
                     env={**os.environ, "PIP_CACHE_DIR": str(ROOT / ".runtime-tools/pip-cache")},

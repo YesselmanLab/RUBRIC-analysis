@@ -10,15 +10,15 @@ import benchmark_direct as direct
 
 class DirectTests(unittest.TestCase):
     def test_native_commands_have_no_preprocessing_or_wrapper(self):
-        config = dict(python="/venv/bin/python", parse="/bin/parse", dssr="/bin/dssr",
+        config = dict(python="/venv/bin/python", rubric="/bin/rubric", dssr="/bin/dssr",
                       rnaview="/bin/rnaview", bpnet="/bin/bpnet",
                       clarna_python="/clarna-env/bin/python", clarna="/src/ClaRNA/clarna.py")
         work = Path("/tmp/run")
         cif = work / "TEST.cif"
         self.assertEqual(direct.command_for("dssr", cif, work, config),
                          ["/bin/dssr", "-i=/tmp/run/TEST.cif", "--pair-only"])
-        self.assertEqual(direct.command_for("parse", cif, work, config),
-                         ["/bin/parse", str(cif), "--no-download", "--cache-dir", str(work)])
+        self.assertEqual(direct.command_for("rubric", cif, work, config),
+                         ["/bin/rubric", str(cif), "--no-download", "--cache-dir", str(work)])
         self.assertEqual(direct.command_for("barnaba", cif, work, config),
                          ["/venv/bin/barnaba", "ANNOTATE", "--pdb", str(cif), "-o", "annotation"])
         for tool in direct.common.TOOLS:
@@ -51,15 +51,15 @@ class DirectTests(unittest.TestCase):
             with patch.object(direct.subprocess, "Popen", side_effect=launch), \
                  patch.object(direct.time, "perf_counter", side_effect=clock), \
                  patch.object(direct, "validate_output", side_effect=validate):
-                result = direct.run_trial("parse", dict(pdb="TEST", nucleotides=1, source_path=str(source)),
-                    0, SimpleNamespace(timeout=10), {"parse":"parse", "python":"/venv/bin/python"}, folder, folder, "originalhash")
+                result = direct.run_trial("rubric", dict(pdb="TEST", nucleotides=1, source_path=str(source)),
+                    0, SimpleNamespace(timeout=10), {"rubric":"rubric", "python":"/venv/bin/python"}, folder, folder, "originalhash")
             self.assertEqual(events, ["clock", "launch", "exit", "clock", "validate"])
             self.assertEqual(result["wall_seconds"], 2.5)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(source.read_bytes(), original)
 
     def test_recorded_command_and_config_have_no_machine_paths(self):
-        config = dict(python="/home/me/venv/bin/python", parse="/home/me/build/parse",
+        config = dict(python="/home/me/venv/bin/python", rubric="/home/me/build/rubric",
                       dssr="/opt/x/x3dna-dssr", rnaview="/home/me/rv/bin/rnaview",
                       bpnet="/home/me/bp/bpnet", packages={"numpy": "2.2.6"},
                       clarna_python="/home/me/clarna-env/bin/python", clarna="/home/me/ClaRNA/clarna.py")

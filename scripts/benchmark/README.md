@@ -1,6 +1,6 @@
 # Direct command-line runtime comparison
 
-Run from the repo root (`FastRNA-Analysis`). All seven tools are installed/configured in
+Run from the repo root (`RUBRIC-analysis`). All seven tools are installed/configured in
 `.runtime-tools/`, with the existing licensed DSSR executable. The structures are
 read from `data/structures/`; download them first with
 `python scripts/fetch_structures.py` (see the main README).
@@ -52,8 +52,8 @@ The commands (paths abbreviated) are:
 
 | Mode | Direct command |
 | --- | --- |
-| PARSE with scoring | `parse input.cif --no-download --cache-dir WORK` |
-| PARSE without scoring | same command plus `--no-score` |
+| RUBRIC with scoring | `rubric input.cif --no-download --cache-dir WORK` |
+| RUBRIC without scoring | same command plus `--no-score` |
 | DSSR | `x3dna-dssr -i=input.cif --pair-only` |
 | FR3D-Python | `python -m fr3d.classifiers.NA_pairwise_interactions -c basepair -i WORK -o WORK input.cif` |
 | RNAView | `rnaview --cif input.cif` |
@@ -68,7 +68,7 @@ additional work and may handle models differently by default. These measurements
 represent the stated commands on identical files, not identical internal kernels.
 Record the commands in the manuscript.
 
-PARSE and DSSR use the original Figure 2 command options and three measured
+RUBRIC and DSSR use the original Figure 2 command options and three measured
 repeats. Instead of warm-up runs, each input file is read in full (its checksum),
 untimed, just before the structure's first trial, so no tool pays for the disk
 read (`--warmups N` restores untimed warm-up runs). Every repeat uses seeded
@@ -88,15 +88,15 @@ conversion pipeline. A tool/structure is eligible for speedups only if every
 measured repeat succeeds with consistent annotation output. Valid zero-pair
 outputs are allowed. Report coverage alongside speedups.
 
-`speedup = competitor median / PARSE median` for the same structure. Values
-above one mean PARSE is faster. Both PARSE modes are supplied as baselines.
+`speedup = competitor median / RUBRIC median` for the same structure. Values
+above one mean RUBRIC is faster. Both RUBRIC modes are supplied as baselines.
 Output hashes check repeatability within each tool; pair counts and formats
 are not an accuracy comparison across tools.
 
 ## Installation and custom inputs
 
 Requirements: macOS or Linux, Python 3.12, Git, CMake, make, GNU C/C++ and
-Fortran, the PARSE engine source (`PARSE-RNA/`, cloned as in the main README's Level 3, or `--parse-source`), the mmCIF inputs in
+Fortran, the RUBRIC engine source (`RUBRIC/`, cloned as in the main README's Level 3, or `--rubric-source`), the mmCIF inputs in
 `data/structures/`, and a licensed DSSR executable. On macOS, build prerequisites can be installed with
 `brew install python@3.12 cmake gcc`.
 
@@ -118,7 +118,7 @@ configuration stay in `.runtime-tools/`. DSSR is not redistributed.
 ```bash
 .runtime-tools/venv/bin/python scripts/benchmark/benchmark_direct.py \
   --input data/structures \
-  --cohort data/benchmark/dssr_PARSE_time_benchmark.csv \
+  --cohort data/benchmark/dssr_RUBRIC_time_benchmark.csv \
   --output data/benchmark/runtime_direct_custom --runs 3 --warmups 1 --resume
 ```
 
@@ -131,8 +131,8 @@ structure-transformation phase.
 - `trials.jsonl`: status, direct-command wall time, command, original-input hash,
   annotation count/hash, and log path for each trial.
 - `per_structure.csv`: median/range for complete, stable repeat sets.
-- `speedups.csv`: matched ratios against both PARSE modes.
-- `coverage.csv`: eligible sample counts and median speedup versus full PARSE.
+- `speedups.csv`: matched ratios against both RUBRIC modes.
+- `coverage.csv`: eligible sample counts and median speedup versus full RUBRIC.
 - `metadata.json`: protocol, settings, environment, versions, and code/binary hashes.
 - `manifest.json`: original input paths, sizes, modification times, and cohort.
 - `logs/`: native standard output/error, including failure details.

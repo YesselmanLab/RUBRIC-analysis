@@ -81,7 +81,7 @@ def residue(chain: str, number: str, icode: str = "") -> ResidueId:
 def parse_res_id(res_id: str) -> ResidueId:
     parts = res_id.split("-")
     if len(parts) < 3:
-        raise ValueError(f"uncanonicalizable PARSE res_id: {res_id!r}")
+        raise ValueError(f"uncanonicalizable RUBRIC res_id: {res_id!r}")
     return residue(parts[0], "-".join(parts[2:]))
 
 
@@ -154,8 +154,8 @@ def tool_pairs(tool: str) -> dict[str, PairSets]:
     return out
 
 
-def parse_pairs() -> dict[str, PairSets]:
-    with paths.data_file("comparison/parse_pairs.json").open() as handle:
+def rubric_pairs() -> dict[str, PairSets]:
+    with paths.data_file("comparison/rubric_pairs.json").open() as handle:
         raw = json.load(handle)
     out: dict[str, PairSets] = {}
     for pdb, record in raw.items():
@@ -174,10 +174,10 @@ def _parse_rows(pdb: str, rows: list[Any]) -> Iterator[tuple[ResidueId, ResidueI
 
 def vote_sides(disputed: str, candidates: tuple[str, ...]) -> tuple[set[str], set[str]] | None:
     dssr = {disputed, flip(disputed)}
-    parse = {v for cand in candidates if cand not in dssr for v in (cand, flip(cand))}
-    if not parse:
+    rubric = {v for cand in candidates if cand not in dssr for v in (cand, flip(cand))}
+    if not rubric:
         return None
-    return dssr, parse
+    return dssr, rubric
 
 
 @dataclass(frozen=True)
@@ -189,12 +189,12 @@ class DisagreementRecord:
     reason: str
     bucket: str
     disputed_class: str
-    parse_candidates: tuple[str, ...]
+    rubric_candidates: tuple[str, ...]
 
 
 def _bucket(reason: str) -> str:
     if reason in REJECTION_REASONS:
-        return "rejected_by_parse"
+        return "rejected_by_rubric"
     if reason.startswith("python_assigns:"):
         return "class_disagreement"
     if reason.startswith("dssr_assigns:"):
@@ -233,5 +233,5 @@ def _record(row: dict[str, Any], lw_class: str) -> DisagreementRecord:
         reason=reason,
         bucket=_bucket(reason),
         disputed_class=lw_class,
-        parse_candidates=candidates,
+        rubric_candidates=candidates,
     )

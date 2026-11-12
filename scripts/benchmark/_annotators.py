@@ -18,7 +18,7 @@ COMPARISON_DIR = REPO / "data" / "comparison"
 LOCAL_CIFS = Path(".")
 RNAVIEW_HOME = Path.home() / "local" / "installs" / "RNAView"
 RNAVIEW_BIN = RNAVIEW_HOME / "bin" / "rnaview"
-PDB_CACHE = Path(tempfile.gettempdir()) / "parse_barnaba_pdbs"
+PDB_CACHE = Path(tempfile.gettempdir()) / "rubric_barnaba_pdbs"
 
 RV_LINE = re.compile(
     r"^\s*\S+,\s+(\S+):\s+(-?\d+\w?)\s+(\S)-(\S)\s+(-?\d+\w?)\s+(\S+):\s+(\S)/(\S)\s+(cis|tran)"

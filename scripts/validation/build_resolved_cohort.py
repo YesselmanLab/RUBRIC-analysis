@@ -96,7 +96,8 @@ def summarise(picked: list, byp: dict, n_nt: dict) -> pd.DataFrame:
             pa, pb = pa[pa.c2 == r.cw], pb[pb.c2 == r.cb]
             if len(pa) and len(pb):
                 mp = pa.merge(pb, on=["n1", "n2", "lw_class"], suffixes=("_w", "_b"))
-                rv = mp[mp.tier_w == "Review"].dropna(subset=["score_w", "score_b"])
+                # "Review" is the pre-2026-10-30 engine label for "Priority review".
+                rv = mp[mp.tier_w.isin(["Review", "Priority review"])].dropna(subset=["score_w", "score_b"])
                 if len(rv) >= 1:
                     dsc = (rv.score_b - rv.score_w).mean()
                     sw, sb = rv.score_w.mean(), rv.score_b.mean()

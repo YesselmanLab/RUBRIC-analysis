@@ -9,7 +9,7 @@ from pathlib import Path
 import pandas as pd
 
 import _engine
-from _engine import is_scorable, res_name, run_parse
+from _engine import is_scorable, res_name, run_rubric
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_REF = REPO_ROOT / "data" / "reference" / "reference_sets" / "reference_set.json"
@@ -74,7 +74,7 @@ def _init_worker(engine: str) -> None:
 
 def _worker(pdb_id: str):
     try:
-        return pdb_id, *extract_one(pdb_id, run_parse(pdb_id, _ENGINE)), None
+        return pdb_id, *extract_one(pdb_id, run_rubric(pdb_id, _ENGINE)), None
     except Exception as e:  # noqa: BLE001
         return pdb_id, [], [], [], f"{type(e).__name__}: {e}"
 
@@ -83,7 +83,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--reference-set", type=Path, default=DEFAULT_REF)
     ap.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    ap.add_argument("--engine", default=None, help="path to `parse` (else PARSE_ENGINE / PATH)")
+    ap.add_argument("--engine", default=None, help="path to `rubric` (else RUBRIC_ENGINE / PATH)")
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--limit", type=int, default=None)
     args = ap.parse_args()

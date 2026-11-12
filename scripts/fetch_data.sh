@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-FILE_ID="${PARSE_DATA_FILE_ID:-1ozLbscHg8NFYVoURuIDklLKOApB7xu8P}"
+FILE_ID="${RUBRIC_DATA_FILE_ID:-1ozLbscHg8NFYVoURuIDklLKOApB7xu8P}"
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ZIP="$REPO_ROOT/data.zip"

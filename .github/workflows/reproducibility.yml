@@ -61,7 +61,7 @@ jobs:
               # exercised transitively by the build_* scripts, not standalone.
               if "/_vendor/" in f.replace("\\", "/"):
                   continue
-              # reference/* drive the PARSE engine repos, which are expected as
+              # reference/* drive the RUBRIC engine repos, which are expected as
               # siblings of this checkout and are not present on the runner.
               # Syntax is still checked below.
               if "/reference/" in f.replace("\\", "/"):
@@ -166,12 +166,12 @@ jobs:
           python-version: "3.12"
       - name: Install requirements (+ recent CMake)
         run: pip install -r requirements.txt cmake
-      - name: Build the PARSE engine
+      - name: Build the RUBRIC engine
         run: |
-          git clone --depth 1 https://github.com/KamshinenD/PARSE-RNA
-          cmake -S PARSE-RNA -B PARSE-RNA/build -DCMAKE_BUILD_TYPE=Release
-          cmake --build PARSE-RNA/build -j"$(getconf _NPROCESSORS_ONLN)"
-          echo "PARSE_ENGINE=$GITHUB_WORKSPACE/PARSE-RNA/build/parse" >> "$GITHUB_ENV"
+          git clone --depth 1 https://github.com/YesselmanLab/RUBRIC
+          cmake -S RUBRIC -B RUBRIC/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build RUBRIC/build -j"$(getconf _NPROCESSORS_ONLN)"
+          echo "RUBRIC_ENGINE=$GITHUB_WORKSPACE/RUBRIC/build/rubric" >> "$GITHUB_ENV"
       - name: Extract features for the 2 fixture structures
         run: |
           cd scripts/data_gen
@@ -218,7 +218,7 @@ jobs:
           python - <<'PY'
           import pathlib, sys
           needed = ["data/" + f for f in [
-              "benchmark/dssr_PARSE_time_benchmark.csv",
+              "benchmark/dssr_RUBRIC_time_benchmark.csv",
               "benchmark/runtime_direct_all/per_structure.csv",
               "benchmark/runtime_direct_all/speedups.csv",
               "comparison/barnaba_pairs.json",
@@ -226,8 +226,8 @@ jobs:
               "comparison/cWW.json",
               "comparison/dssr_pairs.json",
               "comparison/fr3d",
-              "comparison/parse_candidates.json",
-              "comparison/parse_pairs.json",
+              "comparison/rubric_candidates.json",
+              "comparison/rubric_pairs.json",
               "comparison/residue_names.json",
               "comparison/rnapolis_pairs.json",
               "comparison/rnaview_pairs.json",
@@ -243,8 +243,9 @@ jobs:
               "reference/resolved_again/redo_per_structure_points.csv",
               "reference/resolved_again/resolve_pairs_matched.csv",
               "reference/resolved_again/resolve_per_molecule_points.csv",
-              "reference/scores/pair_scores_uniques_parse.jsonl",
+              "reference/scores/pair_scores_uniques_rubric.jsonl",
               "reference/scores/scores_all_uniques.json",
+              "reference/scores/scores_nmr_nonredundant.json",
               "reference/scoring_tables/penalty_weights.json",
               "reference/scoring_tables/prosco_distributions.json",
               "reference/scoring_tables/z_tables.json",

@@ -1,4 +1,4 @@
-"""Referee coverage of FastRNA's rejections and its unique calls, current engine."""
+"""Referee coverage of RUBRIC's rejections and its unique calls, current engine."""
 import csv
 import json
 import sys
@@ -31,7 +31,7 @@ def load_tool(name):
 
 
 def main():
-    tools = {n: load_tool(n) for n in ["parse", "dssr"] + REFEREES}
+    tools = {n: load_tool(n) for n in ["rubric", "dssr"] + REFEREES}
     for n, d in tools.items():
         print(f"  {n:9s} {len(d):5,d} structures", flush=True)
 
@@ -42,8 +42,8 @@ def main():
            "referees": REFEREES, "n_structures": len(shared),
            "matching": "direction-agnostic on (chain, resnum); class label ignored",
            "populations": {}}
-    for label, a, b in (("rejected_by_fastrna", "dssr", "parse"),
-                        ("fastrna_only", "parse", "dssr")):
+    for label, a, b in (("rejected_by_rubric", "dssr", "rubric"),
+                        ("rubric_only", "rubric", "dssr")):
         hist, total = Counter(), 0
         for pdb in shared:
             only = tools[a][pdb] - tools[b][pdb]
