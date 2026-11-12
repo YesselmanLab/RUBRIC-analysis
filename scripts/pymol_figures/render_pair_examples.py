@@ -24,7 +24,11 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
-from pymol import cmd
+
+try:
+    from pymol import cmd
+except ImportError:  # importable without PyMOL (CI imports every script); main() needs it
+    cmd = None
 
 ROOT = Path(__file__).resolve().parents[2]
 STRUCTURES = ROOT / "data" / "structures"
@@ -138,6 +142,8 @@ def render(key, example, hide, thin_ribose):
 
 
 def main():
+    if cmd is None:
+        raise SystemExit("PyMOL is required: install it (e.g. conda install -c conda-forge pymol-open-source)")
     wanted = [a.upper() for a in sys.argv[1:]] or list(FIGURES)
     unknown = [w for w in wanted if w not in FIGURES]
     if unknown:
