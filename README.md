@@ -75,16 +75,13 @@ others write.
 
 ### Level 3: Regenerate the feature tables from raw structures
 The feature CSVs come straight from the RUBRIC C++ engine
-(https://github.com/YesselmanLab/RUBRIC). Build it, then re-extract; run
-everything below from the repo root (`RUBRIC-analysis/`), so the engine is
-cloned as a sibling of `scripts/` and `data/`.
+(https://github.com/YesselmanLab/RUBRIC). Install the engine version that produced
+the data in this repository (`requirements-engine.txt` pins `rubric-rna==0.1.0`),
+then re-extract; run everything below from the repo root (`RUBRIC-analysis/`).
 
 ```bash
-# 1. Build the engine (C++20, CMake >= 3.28): from the repo root
-git clone https://github.com/YesselmanLab/RUBRIC
-cmake -S RUBRIC -B RUBRIC/build -DCMAKE_BUILD_TYPE=Release
-cmake --build RUBRIC/build -j
-export RUBRIC_ENGINE="$PWD/RUBRIC/build/rubric"     # or put `rubric` on PATH
+# 1. Install the engine (ready-made packages for macOS, Linux and Windows)
+pip install -r requirements-engine.txt
 
 # 2. Re-extract every feature table (the engine reads data/structures/<ID>.cif;
 #    an entry that is not there is downloaded into data/structures/engine_cache/)
@@ -103,8 +100,8 @@ python extract_pair_features.py \
 ```
 
 Then rebuild the tables (Level 2) and the figures (Level 1). Both extractors take
-`--limit N` for a quick smoke test and `--engine /path/to/rubric` to override
-`RUBRIC_ENGINE`.
+`--limit N` for a quick smoke test. The scripts use the installed `rubric-rna`;
+`--engine /path/to/rubric` or `RUBRIC_ENGINE` points them at another build instead.
 
 #### Validation data (PDB-REDO)
 The PDB-REDO comparison behind the validation figure is regenerated the same
@@ -126,7 +123,7 @@ re-fetch may add or refresh a few entries versus the archived comparison.
 
 #### Other analysis scripts
 
-Run from the repo root. Scripts marked *engine* need `RUBRIC_ENGINE` (Level 3);
+Run from the repo root. Scripts marked *engine* need the RUBRIC engine (Level 3);
 those marked *structures* read `data/structures/` (see [Structures](#structures-datastructures)).
 
 | script | writes | needs |

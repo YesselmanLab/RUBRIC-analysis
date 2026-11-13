@@ -19,14 +19,42 @@ def structure_args(pdb_id: str) -> list[str]:
     return [pdb_id, "--cache-dir", str(ENGINE_CACHE)]
 
 
+def _installed_binary() -> str | None:
+    """The program bundled with the installed rubric-rna package, if any.
+
+    Calling it directly skips the small Python launcher that `pip install` puts on
+    PATH; the results are the same.
+    """
+    try:
+        import rubric_rna
+    except ImportError:
+        return None
+    binary = rubric_rna.binary_path()
+    return str(binary) if binary.is_file() else None
+
+
+def candidates(explicit: str | None = None) -> list[str | None]:
+    """Where to look for the engine, in order: an explicit path, $RUBRIC_ENGINE,
+    the installed rubric-rna package, then `rubric` on PATH."""
+    return [explicit, os.environ.get("RUBRIC_ENGINE"), _installed_binary(), shutil.which("rubric")]
+
+
 def find_engine(explicit: str | None = None) -> str:
-    for cand in (explicit, os.environ.get("RUBRIC_ENGINE"), shutil.which("rubric")):
+    for cand in candidates(explicit):
         if cand and Path(cand).exists():
             return str(Path(cand).resolve())
     raise FileNotFoundError(
-        "RUBRIC engine not found. Build RUBRIC and set RUBRIC_ENGINE=/path/to/rubric "
-        "(or put `rubric` on PATH)."
+        "RUBRIC engine not found. Install it with `pip install -r requirements-engine.txt`, "
+        "or set RUBRIC_ENGINE=/path/to/rubric."
     )
+
+
+def default_engine() -> str:
+    """find_engine() for use as a command-line default: never raises."""
+    try:
+        return find_engine()
+    except FileNotFoundError:
+        return "rubric"
 
 
 def run_rubric(pdb_id: str, engine: str, cache_dir: str | None = None) -> dict:

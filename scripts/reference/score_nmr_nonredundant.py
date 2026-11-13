@@ -14,9 +14,8 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import os
-import shutil
 import subprocess
+import sys
 import tempfile
 import urllib.request
 from concurrent.futures import ProcessPoolExecutor
@@ -26,7 +25,10 @@ REPO = Path(__file__).resolve().parents[2]
 SETS = REPO / "data" / "reference" / "reference_sets"
 STRUCTURES = REPO / "data" / "structures" / "nmr"
 OUT = REPO / "data" / "reference" / "scores" / "scores_nmr_nonredundant.json"
-ENGINE = os.environ.get("RUBRIC_ENGINE") or shutil.which("rubric") or "rubric"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "data_gen"))
+import _engine  # noqa: E402
+
+ENGINE = _engine.default_engine()
 
 BGSU_RELEASE = "4.62"
 BGSU_URL = "https://rna.bgsu.edu/rna3dhub/nrlist/download/{release}/all/csv"

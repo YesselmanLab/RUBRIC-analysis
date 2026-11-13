@@ -8,16 +8,18 @@ whether or not selection kept it; a pair RUBRIC left unclassified is not credite
 """
 import argparse
 import json
-import os
-import shutil
 import subprocess
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 COMPARISON = ROOT / "data" / "comparison"
 CLASSES = ["cWW", "tWW", "cWH", "tWH", "cWS", "tWS", "cHH", "tHH", "cHS", "tHS", "cSS", "tSS"]
-DEFAULT_BINARY = Path(os.environ.get("RUBRIC_ENGINE") or shutil.which("rubric") or "rubric")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "data_gen"))
+import _engine  # noqa: E402
+
+DEFAULT_BINARY = Path(_engine.default_engine())
 DEFAULT_STRUCTURES = ROOT / "data" / "structures"
 
 

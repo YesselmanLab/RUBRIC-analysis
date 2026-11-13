@@ -2,14 +2,17 @@
 import argparse
 import json
 import os
-import shutil
 import subprocess
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data" / "comparison" / "rubric_pairs.json"
-DEFAULT_BINARY = Path(os.environ.get("RUBRIC_ENGINE") or shutil.which("rubric") or "rubric")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "data_gen"))
+import _engine  # noqa: E402
+
+DEFAULT_BINARY = Path(_engine.default_engine())
 DEFAULT_STRUCTURES = ROOT / "data" / "structures"
 
 

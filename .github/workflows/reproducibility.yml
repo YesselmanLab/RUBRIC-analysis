@@ -152,7 +152,7 @@ jobs:
           PY
 
   engine-reproducibility:
-    name: build engine + regenerate features (${{ matrix.os }})
+    name: install engine + regenerate features (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -164,14 +164,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install requirements (+ recent CMake)
-        run: pip install -r requirements.txt cmake
-      - name: Build the RUBRIC engine
-        run: |
-          git clone --depth 1 https://github.com/YesselmanLab/RUBRIC
-          cmake -S RUBRIC -B RUBRIC/build -DCMAKE_BUILD_TYPE=Release
-          cmake --build RUBRIC/build -j"$(getconf _NPROCESSORS_ONLN)"
-          echo "RUBRIC_ENGINE=$GITHUB_WORKSPACE/RUBRIC/build/rubric" >> "$GITHUB_ENV"
+      - name: Install requirements and the RUBRIC engine
+        run: pip install -r requirements.txt -r requirements-engine.txt
       - name: Extract features for the 2 fixture structures
         run: |
           cd scripts/data_gen

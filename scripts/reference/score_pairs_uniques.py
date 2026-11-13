@@ -4,9 +4,8 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import os
-import shutil
 import subprocess
+import sys
 import tempfile
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -15,7 +14,10 @@ REPO = Path(__file__).resolve().parents[2]
 UNIQUES = REPO / "data" / "reference" / "reference_sets" / "uniqueRNAS.csv"
 STRUCTURES = REPO / "data" / "structures"
 OUT = REPO / "data" / "reference" / "scores" / "pair_scores_uniques_rubric.jsonl"
-ENGINE = os.environ.get("RUBRIC_ENGINE") or shutil.which("rubric") or "rubric"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "data_gen"))
+import _engine  # noqa: E402
+
+ENGINE = _engine.default_engine()
 
 
 def distinct_ids(path: Path) -> list[str]:

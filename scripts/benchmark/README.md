@@ -96,7 +96,7 @@ are not an accuracy comparison across tools.
 ## Installation and custom inputs
 
 Requirements: macOS or Linux, Python 3.12, Git, CMake, make, GNU C/C++ and
-Fortran, the RUBRIC engine source (`RUBRIC/`, cloned as in the main README's Level 3, or `--rubric-source`), the mmCIF inputs in
+Fortran, the RUBRIC engine source at tag `v0.1.0` (`git clone --branch v0.1.0 https://github.com/YesselmanLab/RUBRIC` into `RUBRIC/`, or `--rubric-source`; the timings build the engine from source rather than using the pip package), the mmCIF inputs in
 `data/structures/`, and a licensed DSSR executable. On macOS, build prerequisites can be installed with
 `brew install python@3.12 cmake gcc`.
 
