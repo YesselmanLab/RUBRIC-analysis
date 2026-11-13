@@ -134,6 +134,7 @@ those marked *structures* read `data/structures/` (see [Structures](#structures-
 | `scripts/reference/score_pairs_uniques.py` | `data/reference/scores/pair_scores_uniques_rubric.jsonl` | engine, structures |
 | `scripts/data_gen/extract_pucker.py` | `data/reference/high_quality_features/pucker.csv` (Fig. S2D) | engine, structures |
 | `scripts/data_gen/extract_figure3_examples.py` | `data/reference/figure3/example_pairs.json` (Fig. 3) | engine, structures |
+| `scripts/validation/build_redo_suite_points.py` | suite and pucker columns of `data/reference/resolved_again/redo_per_structure_points.csv` (Fig. 4F-H); run before `build_review_points.py` | engine, structures |
 | `scripts/validation/build_review_points.py` | `data/reference/resolved_again/redo_per_structure_points.csv`, `issue_rates_per_unit.csv` (Fig. 4, Fig. S1) | engine, structures |
 | `scripts/reference/count_nucleotides.py` | nucleotide counts in `data/reference/metadata/metadata_cache.json` | structures |
 | `scripts/validation/build_engine_archive.py` | `data/reference/engine_archive/` (per-pair and per-suite engine output) | engine, structures |
